@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+
+  postgres:
+    image: postgres
+    volumes:
+    - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${PGUSER}
+      - POSTGRES_PASSWORD=${PGPASSWORD}
+      - POSTGRES_DB=${PGDATABASE}
+
+  backend:
+    build:
+      dockerfile: ./Dockerfile.dev
+      context: .
+    volumes:
+      - ./:/usr/app
+    environment:
+      - PGUSER=${PGUSER}
+      - PGHOST=${PGHOST}
+      - PGPORT=${PGPORT}
+      - PGDATABASE=${PGDATABASE}
+      - PGPASSWORD=${PGPASSWORD}
+    ports:
+      - 3000:3000
+
+volumes:
+  postgres-data:
