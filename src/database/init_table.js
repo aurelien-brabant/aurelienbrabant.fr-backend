@@ -23,7 +23,8 @@ const sqlCreateBlogpostTable = `CREATE TABLE IF NOT EXISTS blogpost (
 		author_id			INTEGER REFERENCES user_account(user_id) NOT NULL,
 		description			VARCHAR(300) NOT NULL,
 		content				TEXT NOT NULL,
-		publication_date	TIMESTAMP NOT NULL,
+		release_ts			TIMESTAMP NOT NULL,
+		last_edit_ts		TIMESTAMP NOT NULL,
 		cover_image_path	VARCHAR(255)
 	);`;
 
