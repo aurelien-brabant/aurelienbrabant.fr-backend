@@ -8,7 +8,7 @@ var app = require('../app');
 var debug = require('debug')('aurelienbrabant.fr-backend:server');
 var http = require('http');
 
-const pool = require('../src/database').pool;
+const { pool, initialize } = require('../src/database/database');
 
 /**
  * Get port from environment and store in Express.
@@ -92,4 +92,6 @@ function onListening() {
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
+
+  initialize();
 }
