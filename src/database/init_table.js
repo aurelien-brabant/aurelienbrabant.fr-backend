@@ -1,3 +1,8 @@
+/**
+ * This module contains all the CREATE TABLE sql statements used to initialize the tables of the database.
+ * This module exports an array that contains all these statements, in the correct order.
+ */
+
 const sqlCreateUserAccountTable = `CREATE TABLE IF NOT EXISTS user_account (
 		user_id				SERIAL PRIMARY KEY,
 		email				VARCHAR(70) UNIQUE NOT NULL,
