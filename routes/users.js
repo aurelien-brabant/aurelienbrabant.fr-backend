@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
+const validatorMiddleware = require('../middlewares/validationResult');
 const userServices = require("../services/users");
+
+const { body, param } = require('express-validator');
 
 /* GET users listing. */
 router.get("/", async function (_req, res, _next) {
@@ -12,7 +15,13 @@ router.get("/", async function (_req, res, _next) {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/",
+  body('email').isEmail(),
+  body('username').isLength({ min: 5, max: 25}),
+  body('password').isLength({ min: 8, max: 100}),
+  validatorMiddleware,
+  async (req, res) => {
+
   const { email, username, password: plainTextPassword } = req.body;
 
   try {
@@ -25,13 +34,14 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id",
+  param('id').isNumeric(),
+  validatorMiddleware,
+  async (req, res) => {
   const id = req.params.id;
 
   try {
     const userData = await userServices.findUserById(id);
-
-    console.log(userData);
 
     if (!userData) {
       return res.status(404).send("Not found");
@@ -39,18 +49,23 @@ router.get("/:id", async (req, res) => {
 
     return res.json(userData);
   } catch (e) {
+    console.log(e);
     return res.status(500).send("Internal Server Error");
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id",
+  param('id').isNumeric(),
+  validatorMiddleware,
+  async (req, res) => {
   const id = req.params.id;
 
   try {
-   const deleted = await userServices.removeUserById(id);
+   const _deleted = await userServices.removeUserById(id);
 
     return res.status(200).send();
-  } catch {
+  } catch (e) {
+    console.error(e);
     return res.status(500).send("Internal Server Error");
   }
 });

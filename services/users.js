@@ -5,7 +5,7 @@ const db = require("../src/database/database").pool;
 
 const findUserBy = async (searchBy, searchValue) => {
 	const res = await db.query(
-		`SELECT user_id, email, username, role, is_email_verified, is_activated, firstname, lastname, account_creation_ts, last_login_ts
+		`SELECT user_id, email, username, role, firstname, lastname, account_creation_ts, last_login_ts
 		FROM user_account
 		WHERE ${searchBy} = $1
 		LIMIT 1
@@ -54,7 +54,7 @@ const findUserById = async (id) => {
 
 const findUsers = async (limit = 100) => {
 	const res = await db.query(
-		`SELECT user_id, email, username, role, is_email_verified, is_activated
+		`SELECT user_id, email, username, role
 		FROM user_account
 		LIMIT $1
 	;`,
@@ -66,8 +66,6 @@ const findUsers = async (limit = 100) => {
 		email: row.email,
 		username: row.username,
 		role: row.role,
-		isEmailVerified: row.is_email_verified,
-		isActivated: row.is_activated,
 	}));
 };
 
