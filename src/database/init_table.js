@@ -25,7 +25,8 @@ const sqlCreateBlogpostTable = `CREATE TABLE IF NOT EXISTS blogpost (
 		content				TEXT NOT NULL,
 		release_ts			TIMESTAMP NOT NULL,
 		last_edit_ts		TIMESTAMP NOT NULL,
-		cover_image_path	VARCHAR(255)
+		cover_image_path	VARCHAR(255),
+		privacy				VARCHAR(20) DEFAULT PRIVATE
 	);`;
 
 const sqlCreateBlogpostCommentTable = `CREATE TABLE IF NOT EXISTS blogpost_comment (
