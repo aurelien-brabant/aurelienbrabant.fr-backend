@@ -82,18 +82,7 @@ const validateBlogpostMarkdownMetadata = (meta: any) => {
   return errors;
 };
 
-type BlogpostData = {
-  blogpostId: number,
-  title: string,
-  description: string,
-  authorId: number,
-  content: string,
-  releaseTs: Date,
-  lastEditTs: Date,
-  coverImagePath: string
-}
-
-const findBlogpost = async (searchCriteria: string, searchValue: string): Promise<BlogpostData> => {
+const findBlogpost = async (searchCriteria: string, searchValue: string): Promise<BrabantApi.BlogpostData> => {
   const res = await db.query(
     `SELECT blogpost_id, title, author_id, description, content, release_ts, last_edit_ts, cover_image_path
     FROM blogpost
@@ -218,16 +207,7 @@ export const findBlogpostById = (id: string) => {
   return findBlogpost("blogpost_id", id);
 };
 
-type BlogpostList = {
-  blogpostId: number,
-  title: string,
-  description: string,
-  authorId: number,
-  releaseTs: Date,
-  lastEditTs: Date
-}[];
-
-export const findBlogposts = async (limit: number = 100): Promise<BlogpostList> => {
+export const findBlogposts = async (limit: number = 100): Promise<BrabantApi.BlogpostList> => {
   const res = await db.query(
     `
 		SELECT blogpost_id, title, author_id, description, release_ts, last_edit_ts, cover_image_path

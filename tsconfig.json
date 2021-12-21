@@ -8,7 +8,11 @@
     "noFallthroughCasesInSwitch": true,
     "noEmitOnError": true,
     "target": "es6",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ]
   },
 
   "include": [
@@ -16,7 +20,8 @@
     "services/*",
     "middlewares/*",
     "src/**/*",
-    "bin/*"
+    "bin/*",
+    "types/*"
   ],
 
   "exclude": ["node_modules"]

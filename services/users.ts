@@ -3,20 +3,7 @@ import { pool as db } from "../src/database/database";
 
 // Helpers {{{
 
-type UserData = {
-	userId: number,
-	email: string,
-	username: string,
-	firstname?: string,
-	lastname?: string,
-	role: number,
-	isEmailVerified: boolean,
-	isActivated: boolean,
-	accountCreationTs: Date,
-	lastLoginTs: Date
-}
-
-const findUserBy = async (searchBy: string, searchValue: string): Promise<UserData> => {
+const findUserBy = async (searchBy: string, searchValue: string): Promise<BrabantApi.UserData> => {
 	const res = await db.query(
 		`SELECT user_id, email, username, role, firstname, lastname, account_creation_ts, last_login_ts
 		FROM user_account
@@ -64,14 +51,7 @@ export const findUserById = async (id: string) => {
 	return await findUserBy("user_id", id);
 };
 
-type UserList = {
-	userId: number,
-	email: string,
-	username: string,
-	role: number
-}[];
-
-export const findUsers = async (limit: number = 100): Promise<UserList> => {
+export const findUsers = async (limit: number = 100): Promise<BrabantApi.UserList> => {
 	const res = await db.query(
 		`SELECT user_id, email, username, role
 		FROM user_account
@@ -90,13 +70,7 @@ export const findUsers = async (limit: number = 100): Promise<UserList> => {
 
 // }}}
 
-type CreateUserRet = {
-	email : string,
-	username: string,
-	accountCreationTs: Date,
-}
-
-export const createUser = async (email: string, username: string, password: string): Promise<CreateUserRet> => {
+export const createUser = async (email: string, username: string, password: string): Promise<BrabantApi.CreateUserRet> => {
 	const hash = await bcrypt.hash(password, 10);
 
 	const res = await db.query(
