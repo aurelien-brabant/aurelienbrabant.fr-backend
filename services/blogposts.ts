@@ -1,19 +1,19 @@
-const db = require("../src/database/database").pool;
-const matter = require("gray-matter");
-const validator = require("validator");
+import { pool as db } from "../src/database/database";
+import matter from "gray-matter";
+import validator from "validator";
 
 // Because we need to parse the file using gray-matter after it has been uploaded,
 // we need to perform metadata validation in the service. The validation errors, if any,
 // are returned in an array, which is empty in case validation is successful.
 
-const validateBlogpostMarkdownMetadata = (meta) => {
+const validateBlogpostMarkdownMetadata = (meta: any) => {
   const errors = [];
   const mandatoryFields = ["title", "description", "coverImagePath"];
-  const pushFieldError = (field) => {
+  const pushFieldError = (field: string) => {
     errors.push({ field, msg: "Provided value is invalid" });
   };
 
-  for (field of mandatoryFields) {
+  for (const field of mandatoryFields) {
     if (meta[field] === undefined) {
       errors.push({
         field,
@@ -82,13 +82,51 @@ const validateBlogpostMarkdownMetadata = (meta) => {
   return errors;
 };
 
+type BlogpostData = {
+  blogpostId: number,
+  title: string,
+  description: string,
+  authorId: number,
+  content: string,
+  releaseTs: Date,
+  lastEditTs: Date,
+  coverImagePath: string
+}
+
+const findBlogpost = async (searchCriteria: string, searchValue: string): Promise<BlogpostData> => {
+  const res = await db.query(
+    `SELECT blogpost_id, title, author_id, description, content, release_ts, last_edit_ts, cover_image_path
+    FROM blogpost
+    WHERE ${searchCriteria} = $1
+    ;`,
+    [searchValue]
+  );
+
+  if (res.rows.length == 0) {
+    return null;
+  }
+
+  const row = res.rows[0];
+
+  return {
+    blogpostId: row.blogpost_id,
+    title: row.title,
+    description: row.description,
+    authorId: row.author_id,
+    content: row.content,
+    releaseTs: row.release_ts,
+    lastEditTs: row.last_edit_ts,
+    coverImagePath: row.cover_image_path,
+  };
+};
+
 // Will attempt to validate the post metadata, ensuring that required fields are present
 // and that they are in the expected format.
 // Given either the authorId or authorEmail fields, it will also attempt to find a relevant
 // user to attach the post to. In case such user can't be found, no blogpost will be created in database and an error will be pushed
 // into the error array, which is eventually returned.
 
-const createBlogpostFromMarkdown = async (markdownData) => {
+export const createBlogpostFromMarkdown = async (markdownData: string): Promise<{ field: string, msg: string }[]> => {
   const { data, content } = matter(markdownData);
   let authorId = null,
     res = null;
@@ -129,6 +167,7 @@ const createBlogpostFromMarkdown = async (markdownData) => {
   if (authorId === null) {
     return [
       {
+        field: 'authorId',
         msg: "Could not attach the post to an existing user in database. Either authorId or authorEmail are not present, or these are not refering to a valid user.",
       },
     ];
@@ -149,14 +188,14 @@ const createBlogpostFromMarkdown = async (markdownData) => {
 
 // TODO: watch for duplicate posts per user
 
-const createBlogpost = async (
-  authorId,
-  title,
-  description,
-  content,
-  coverImagePath,
-  releaseTs,
-  lastEditTs
+export const createBlogpost = async (
+  authorId: number,
+  title: string,
+  description: string,
+  content: string,
+  coverImagePath: string,
+  releaseTs: Date,
+  lastEditTs: Date
 ) => {
   await db.query(
     `
@@ -175,38 +214,20 @@ const createBlogpost = async (
   );
 };
 
-const findBlogpost = async (searchCriteria, searchValue) => {
-  const res = await db.query(
-    `SELECT blogpost_id, title, author_id, description, content, release_ts, last_edit_ts, cover_image_path
-    FROM blogpost
-    WHERE ${searchCriteria} = $1
-    ;`,
-    [searchValue]
-  );
-
-  if (res.rows.length == 0) {
-    return null;
-  }
-
-  const row = res.rows[0];
-
-  return {
-    blogpostId: row.blogpost_id,
-    title: row.title,
-    description: row.description,
-    authorId: row.author_id,
-    content: row.content,
-    releaseTs: row.release_ts,
-    lastEditTs: row.last_edit_ts,
-    coverImagePath: row.cover_image_path
-  }
+export const findBlogpostById = (id: string) => {
+  return findBlogpost("blogpost_id", id);
 };
 
-const findBlogpostById = (id) => {
-  return findBlogpost('blogpost_id', id);
-}
+type BlogpostList = {
+  blogpostId: number,
+  title: string,
+  description: string,
+  authorId: number,
+  releaseTs: Date,
+  lastEditTs: Date
+}[];
 
-const findBlogposts = async (limit = 100) => {
+export const findBlogposts = async (limit: number = 100): Promise<BlogpostList> => {
   const res = await db.query(
     `
 		SELECT blogpost_id, title, author_id, description, release_ts, last_edit_ts, cover_image_path
@@ -226,21 +247,14 @@ const findBlogposts = async (limit = 100) => {
   }));
 };
 
-const removeBlogpostById = async (id) => {
-  const res = await db.query(`
+export const removeBlogpostById = async (id: string) => {
+  const res = await db.query(
+    `
     DELETE FROM blogpost
     WHERE blogpost_id = $1
-  `, [id]);
+  `,
+    [id]
+  );
 
   return !!res.rowCount;
-}
-
-module.exports = {
-  createBlogpost,
-  findBlogposts,
-  findBlogpostById,
-  createBlogpostFromMarkdown,
-  removeBlogpostById,
 };
-
-

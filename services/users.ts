@@ -1,9 +1,22 @@
-const bcrypt = require("bcrypt");
-const db = require("../src/database/database").pool;
+import bcrypt from "bcrypt";
+import { pool as db } from "../src/database/database";
 
 // Helpers {{{
 
-const findUserBy = async (searchBy, searchValue) => {
+type UserData = {
+	userId: number,
+	email: string,
+	username: string,
+	firstname?: string,
+	lastname?: string,
+	role: number,
+	isEmailVerified: boolean,
+	isActivated: boolean,
+	accountCreationTs: Date,
+	lastLoginTs: Date
+}
+
+const findUserBy = async (searchBy: string, searchValue: string): Promise<UserData> => {
 	const res = await db.query(
 		`SELECT user_id, email, username, role, firstname, lastname, account_creation_ts, last_login_ts
 		FROM user_account
@@ -37,22 +50,28 @@ const findUserBy = async (searchBy, searchValue) => {
 
 // }}}
 
-
 // find {{{
 
-const findUserByEmail = async (email) => {
+export const findUserByEmail = async (email: string) => {
 	return await findUserBy("email", email);
 };
 
-const findUserByUsername = async (username) => {
+export const findUserByUsername = async (username: string) => {
 	return await findUserBy("username", username);
 };
 
-const findUserById = async (id) => {
+export const findUserById = async (id: string) => {
 	return await findUserBy("user_id", id);
 };
 
-const findUsers = async (limit = 100) => {
+type UserList = {
+	userId: number,
+	email: string,
+	username: string,
+	role: number
+}[];
+
+export const findUsers = async (limit: number = 100): Promise<UserList> => {
 	const res = await db.query(
 		`SELECT user_id, email, username, role
 		FROM user_account
@@ -71,7 +90,13 @@ const findUsers = async (limit = 100) => {
 
 // }}}
 
-const createUser = async (email, username, password) => {
+type CreateUserRet = {
+	email : string,
+	username: string,
+	accountCreationTs: Date,
+}
+
+export const createUser = async (email: string, username: string, password: string): Promise<CreateUserRet> => {
 	const hash = await bcrypt.hash(password, 10);
 
 	const res = await db.query(
@@ -94,7 +119,7 @@ const createUser = async (email, username, password) => {
  * @return {bool} true if targeted user has been successfully deactivated/deleted false otherwise.
  */
 
-const removeUserById = async (id, onlyDeactivate = true) => {
+export const removeUserById = async (id: number, onlyDeactivate: boolean = true): Promise<boolean> => {
 	if (onlyDeactivate) {
 		const res = await db.query(
 			`UPDATE user_account
@@ -114,13 +139,4 @@ const removeUserById = async (id, onlyDeactivate = true) => {
 	;`, [id]);
 
 	return !!res.rowCount;
-};
-
-module.exports = {
-	findUsers,
-	findUserById,
-	findUserByUsername,
-	findUserByEmail,
-	removeUserById,
-	createUser,
 };

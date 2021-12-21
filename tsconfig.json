@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noEmitOnError": true,
+    "target": "es6",
+    "esModuleInterop": true
+  },
+
+  "include": [
+    "routes/*",
+    "services/*",
+    "middlewares/*",
+    "src/**/*",
+    "bin/*"
+  ],
+
+  "exclude": ["node_modules"]
+}

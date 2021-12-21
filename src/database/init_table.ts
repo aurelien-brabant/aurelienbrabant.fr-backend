@@ -1,9 +1,11 @@
+import type { SqlQuery } from './database';
+
 /**
  * This module contains all the CREATE TABLE sql statements used to initialize the tables of the database.
  * This module exports an array that contains all these statements, in the correct order.
  */
 
-const sqlCreateUserAccountTable = `CREATE TABLE IF NOT EXISTS user_account (
+const sqlCreateUserAccountTable: SqlQuery = `CREATE TABLE IF NOT EXISTS user_account (
 		user_id				SERIAL PRIMARY KEY,
 		email				VARCHAR(70) UNIQUE NOT NULL,
 		username			VARCHAR(25) UNIQUE NOT NULL,
@@ -17,7 +19,7 @@ const sqlCreateUserAccountTable = `CREATE TABLE IF NOT EXISTS user_account (
 		last_login_ts		TIMESTAMP
 	);`;
 
-const sqlCreateBlogpostTable = `CREATE TABLE IF NOT EXISTS blogpost (
+const sqlCreateBlogpostTable: SqlQuery = `CREATE TABLE IF NOT EXISTS blogpost (
 		blogpost_id			SERIAL PRIMARY KEY,
 		title				VARCHAR(100) NOT NULL,
 		author_id			INTEGER REFERENCES user_account(user_id) NOT NULL,
@@ -29,7 +31,7 @@ const sqlCreateBlogpostTable = `CREATE TABLE IF NOT EXISTS blogpost (
 		privacy				VARCHAR(20) DEFAULT PRIVATE
 	);`;
 
-const sqlCreateBlogpostCommentTable = `CREATE TABLE IF NOT EXISTS blogpost_comment (
+const sqlCreateBlogpostCommentTable: SqlQuery = `CREATE TABLE IF NOT EXISTS blogpost_comment (
 		blogpost_comment_id	SERIAL PRIMARY KEY,
 		author				INTEGER REFERENCES user_account(user_id),
 		guest_name			VARCHAR(25),
@@ -45,7 +47,7 @@ const sqlCreateBlogpostCommentTable = `CREATE TABLE IF NOT EXISTS blogpost_comme
  * Email verification token 
  */
 
-const sqlCreateEmailVerificationTokenTable = `CREATE TABLE IF NOT EXISTS email_verification_token (
+const sqlCreateEmailVerificationTokenTable: SqlQuery = `CREATE TABLE IF NOT EXISTS email_verification_token (
 		email_verification_token_id SERIAL PRIMARY KEY,
 		issuer_user_id				INTEGER REFERENCES user_account(user_id) NOT NULL,
 		expiration_ts				TIMESTAMP NOT NULL,
@@ -56,15 +58,15 @@ const sqlCreateEmailVerificationTokenTable = `CREATE TABLE IF NOT EXISTS email_v
  * Events
  */
 
-const sqlCreateUserEventTable = `CREATE TABLE IF NOT EXISTS user_event (
+const sqlCreateUserEventTable: SqlQuery = `CREATE TABLE IF NOT EXISTS user_event (
 		user_id				INTEGER REFERENCES user_account(user_id) NOT NULL,
 		tstz				TIMESTAMPTZ NOT NULL,
 		payload				TEXT
 	);`;
 
-const sqlCreateUserLoginEventTable = `CREATE TABLE IF NOT EXISTS user_login_event () INHERITS(user_event);`;
+const sqlCreateUserLoginEventTable: SqlQuery = `CREATE TABLE IF NOT EXISTS user_login_event () INHERITS(user_event);`;
 
-module.exports = [
+export default [
 	sqlCreateUserAccountTable,
 	
 	sqlCreateBlogpostTable,

@@ -1,17 +1,24 @@
-const express = require("express");
-const fileUpload = require("express-fileupload");
-const router = express.Router();
+import { Router } from "express";
+import fileUpload from "express-fileupload";
 
-const { body, param } = require("express-validator");
-const validatorMiddleware = require("../middlewares/validationResult");
+import { body, param } from "express-validator";
+import validatorMiddleware from "../middlewares/validationResult";
 
-const blogpostServices = require("../services/blogposts");
+import {
+  findBlogposts,
+  removeBlogpostById,
+  findBlogpostById,
+  createBlogpost,
+  createBlogpostFromMarkdown,
+} from "../services/blogposts";
+
+const router = Router();
 
 router.get("/", async (_req, res) => {
   try {
-    const posts = await blogpostServices.findBlogposts();
+    const posts = await findBlogposts();
 
-    return res.json(posts);
+    res.json(posts);
   } catch {
     res.status(500).send("Internal Server Error");
   }
@@ -39,7 +46,7 @@ router.post(
     } = req.body;
 
     try {
-      const creationData = blogpostServices.createBlogpost(
+      const creationData = createBlogpost(
         authorId,
         title,
         description,
@@ -73,9 +80,9 @@ router.post(
       const uploaded = [];
 
       for (const filename of filenames) {
-        const markdownData = req.files[filename].data;
+        const markdownData = (req.files[filename] as fileUpload.UploadedFile).data;
 
-        const errors = await blogpostServices.createBlogpostFromMarkdown(
+        const errors = await createBlogpostFromMarkdown(
           markdownData.toString()
         );
 
@@ -93,37 +100,33 @@ router.post(
   }
 );
 
-router.get("/:id",
-  param('id').isNumeric(),
-  async (req, res) => {
-    const id = req.params.id;
+router.get("/:id", param("id").isNumeric(), async (req, res) => {
+  const id = req.params.id;
 
-    try {
-      const blogpostData = await blogpostServices.findBlogpostById(id);
+  try {
+    const blogpostData = await findBlogpostById(id);
 
-      if (blogpostData === null) {
-        return res.status(404).json({ msg: 'No such blogpost' });
-      }
-
-      return res.json(blogpostData);
-    } catch (e) {
-      console.error(e);
-      return res.status(500).send("Internal server error");
+    if (blogpostData === null) {
+      return res.status(404).json({ msg: "No such blogpost" });
     }
-  });
 
-router.delete("/:id",
-  param('id').isNumeric(),
-  async (req, res) => {
+    return res.json(blogpostData);
+  } catch (e) {
+    console.error(e);
+    return res.status(500).send("Internal server error");
+  }
+});
+
+router.delete("/:id", param("id").isNumeric(), async (req, res) => {
   const { id } = req.params;
   try {
-    const _deleted = await blogpostServices.removeBlogpostById(id);
+    const _deleted = await removeBlogpostById(id);
 
     return res.status(200).json({});
   } catch (e) {
     console.error(e);
-    return res.status(500).send('Internal Server Error');
+    return res.status(500).send("Internal Server Error");
   }
 });
 
-module.exports = router;
+export default router;
