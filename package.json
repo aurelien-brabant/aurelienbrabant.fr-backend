@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "tsc && node ./bin/www",
+    "start": "tsc && node ./dist/bin/www",
     "dev": "ts-node-dev ./bin/www"
   },
   "dependencies": {
