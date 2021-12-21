@@ -10,6 +10,8 @@ declare namespace BrabantApi {
 		authorId: number;
 		releaseTs: Date;
 		lastEditTs: Date;
+		estimatedReadingTime: number;
+		stringId: string;
 	};
 
 	/**
@@ -25,6 +27,8 @@ declare namespace BrabantApi {
 		releaseTs: Date;
 		lastEditTs: Date;
 		coverImagePath: string;
+		estimatedReadingTime: number;
+		stringId: string;
 	};
 
 	/**

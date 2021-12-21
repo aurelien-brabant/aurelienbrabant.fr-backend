@@ -82,7 +82,35 @@ const validateBlogpostMarkdownMetadata = (meta: any) => {
   return errors;
 };
 
-const findBlogpost = async (searchCriteria: string, searchValue: string): Promise<BrabantApi.BlogpostData> => {
+/**
+ * Formula taken from: https://infusion.media/content-marketing/how-to-calculate-reading-time/
+ */
+
+const computeReadingTime = (input: string) => {
+  const t = input.split(' ').length / 200;
+
+  const minutes = Math.floor(t);
+  const decimal = Math.abs(t) - minutes;
+
+  return Math.round(minutes + decimal * .60);
+}
+
+/**
+ * Transform blogpost title into a string suitable for identification
+ * - all lowercase
+ * - spaces are replaced by hyphens
+ *
+ * Example: "Everything about the typescript transpiler" => "everything-about-the-typescript-transpiler"
+ */
+
+const makeStringId = (blogpostTitle: string) => {
+  return blogpostTitle.toLowerCase().trim().split(' ').join('-').replace(/[^0-9a-z-]/ig, '');
+}
+
+const findBlogpost = async (
+  searchCriteria: string,
+  searchValue: string
+): Promise<BrabantApi.BlogpostData> => {
   const res = await db.query(
     `SELECT blogpost_id, title, author_id, description, content, release_ts, last_edit_ts, cover_image_path
     FROM blogpost
@@ -106,6 +134,8 @@ const findBlogpost = async (searchCriteria: string, searchValue: string): Promis
     releaseTs: row.release_ts,
     lastEditTs: row.last_edit_ts,
     coverImagePath: row.cover_image_path,
+    estimatedReadingTime: computeReadingTime(row.title + row.description + row.content),
+    stringId: 'hello'
   };
 };
 
@@ -115,7 +145,9 @@ const findBlogpost = async (searchCriteria: string, searchValue: string): Promis
 // user to attach the post to. In case such user can't be found, no blogpost will be created in database and an error will be pushed
 // into the error array, which is eventually returned.
 
-export const createBlogpostFromMarkdown = async (markdownData: string): Promise<{ field: string, msg: string }[]> => {
+export const createBlogpostFromMarkdown = async (
+  markdownData: string
+): Promise<{ field: string; msg: string }[]> => {
   const { data, content } = matter(markdownData);
   let authorId = null,
     res = null;
@@ -156,7 +188,7 @@ export const createBlogpostFromMarkdown = async (markdownData: string): Promise<
   if (authorId === null) {
     return [
       {
-        field: 'authorId',
+        field: "authorId",
         msg: "Could not attach the post to an existing user in database. Either authorId or authorEmail are not present, or these are not refering to a valid user.",
       },
     ];
@@ -207,10 +239,20 @@ export const findBlogpostById = (id: string) => {
   return findBlogpost("blogpost_id", id);
 };
 
-export const findBlogposts = async (limit: number = 100): Promise<BrabantApi.BlogpostPreview[]> => {
+export const findBlogposts = async (
+  limit: number = 100
+): Promise<BrabantApi.BlogpostPreview[]> => {
   const res = await db.query(
     `
-		SELECT blogpost_id, title, author_id, description, release_ts, last_edit_ts, cover_image_path
+		SELECT
+        blogpost_id,
+        title,
+        author_id,
+        description,
+        release_ts,
+        last_edit_ts,
+        cover_image_path,
+        content
 		FROM blogpost
 		LIMIT $1
 	`,
@@ -224,6 +266,8 @@ export const findBlogposts = async (limit: number = 100): Promise<BrabantApi.Blo
     description: row.description,
     releaseTs: row.release_ts,
     lastEditTs: row.last_edit_ts,
+    estimatedReadingTime: computeReadingTime(row.title + row.description + row.content),
+    stringId: makeStringId('               Hello Les%&&&&&&==== a|mis           ')
   }));
 };
 
