@@ -51,7 +51,7 @@ export const findUserById = async (id: string) => {
 	return await findUserBy("user_id", id);
 };
 
-export const findUsers = async (limit: number = 100): Promise<BrabantApi.UserList> => {
+export const findUsers = async (limit: number = 100): Promise<BrabantApi.UserPreview[]> => {
 	const res = await db.query(
 		`SELECT user_id, email, username, role
 		FROM user_account

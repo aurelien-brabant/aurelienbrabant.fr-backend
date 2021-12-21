@@ -1,21 +1,16 @@
 declare namespace BrabantApi {
 	/**
 	 * API route: GET /blogposts
-	 *
-	 * NOTE:
-	 * A BlogpostList is not an array of BlogpostData objects
-	 * because the /blogposts route returns less fields
-	 * for each post.
 	 */
 
-	export type BlogpostList = {
+	export type BlogpostPreview = {
 		blogpostId: number;
 		title: string;
 		description: string;
 		authorId: number;
 		releaseTs: Date;
 		lastEditTs: Date;
-	}[];
+	};
 
 	/**
 	 * API route: GET /blogposts/:id
@@ -36,12 +31,12 @@ declare namespace BrabantApi {
 	 * API route: GET /users
 	 */
 
-	export type UserList = {
+	export type UserPreview = {
 		userId: number;
 		email: string;
 		username: string;
 		role: number;
-	}[];
+	};
 
 	/**
 	 * API route: GET /users/:id

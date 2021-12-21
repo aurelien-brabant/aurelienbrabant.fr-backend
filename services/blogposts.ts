@@ -207,7 +207,7 @@ export const findBlogpostById = (id: string) => {
   return findBlogpost("blogpost_id", id);
 };
 
-export const findBlogposts = async (limit: number = 100): Promise<BrabantApi.BlogpostList> => {
+export const findBlogposts = async (limit: number = 100): Promise<BrabantApi.BlogpostPreview[]> => {
   const res = await db.query(
     `
 		SELECT blogpost_id, title, author_id, description, release_ts, last_edit_ts, cover_image_path
