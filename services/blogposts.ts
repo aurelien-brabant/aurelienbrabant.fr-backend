@@ -83,17 +83,21 @@ const validateBlogpostMarkdownMetadata = (meta: any) => {
 };
 
 /**
- * Formula taken from: https://infusion.media/content-marketing/how-to-calculate-reading-time/
+ * @description Returns estimated reading time for the given input
+ * @param {string} The content to compute the estimated reading time of
+ * @return {number} the estimated reading time, in _minutes_
+ *
+ * NOTE: Formula taken from: https://infusion.media/content-marketing/how-to-calculate-reading-time/
  */
 
-const computeReadingTime = (input: string) => {
-  const t = input.split(' ').length / 200;
+const computeReadingTime = (input: string): number => {
+  const t = input.split(" ").length / 200; // get word count
 
   const minutes = Math.floor(t);
-  const decimal = Math.abs(t) - minutes;
+  const decimal = Math.abs(t) - minutes; // extract the decimal part
 
-  return Math.round(minutes + decimal * .60);
-}
+  return Math.round(minutes + decimal * 0.6);
+};
 
 /**
  * Transform blogpost title into a string suitable for identification
@@ -104,16 +108,35 @@ const computeReadingTime = (input: string) => {
  */
 
 const makeStringId = (blogpostTitle: string) => {
-  return blogpostTitle.toLowerCase().trim().split(' ').join('-').replace(/[^0-9a-z-]/ig, '');
-}
+  return blogpostTitle
+    .toLowerCase()
+    .trim()
+    .split(" ")
+    .join("-")
+    .replace(/[^0-9\p{L}-]/giu, "");
+    // remove everything that is NOT in this charset
+    // \p{L} matches any kind of letter from any language
+};
 
 const findBlogpost = async (
   searchCriteria: string,
   searchValue: string
 ): Promise<BrabantApi.BlogpostData> => {
   const res = await db.query(
-    `SELECT blogpost_id, title, author_id, description, content, release_ts, last_edit_ts, cover_image_path
+    `SELECT
+    blogpost_id,
+    string_id,
+    title,
+    author_id,
+    username AS author_username,
+    description,
+    content,
+    release_ts,
+    last_edit_ts,
+    cover_image_path
     FROM blogpost
+    INNER JOIN user_account
+    ON user_account.user_id = blogpost.author_id
     WHERE ${searchCriteria} = $1
     ;`,
     [searchValue]
@@ -130,12 +153,15 @@ const findBlogpost = async (
     title: row.title,
     description: row.description,
     authorId: row.author_id,
+    authorUsername: row.author_username,
     content: row.content,
     releaseTs: row.release_ts,
     lastEditTs: row.last_edit_ts,
     coverImagePath: row.cover_image_path,
-    estimatedReadingTime: computeReadingTime(row.title + row.description + row.content),
-    stringId: 'hello'
+    estimatedReadingTime: computeReadingTime(
+      row.title + row.description + row.content
+    ),
+    stringId: row.string_id,
   };
 };
 
@@ -220,10 +246,11 @@ export const createBlogpost = async (
 ) => {
   await db.query(
     `
-		INSERT INTO blogpost(author_id, title, description, content, cover_image_path, release_ts, last_edit_ts)
-		VALUES($1, $2, $3, $4, $5, $6, $7)
+		INSERT INTO blogpost(string_id, author_id, title, description, content, cover_image_path, release_ts, last_edit_ts)
+		VALUES($1, $2, $3, $4, $5, $6, $7, $8)
 	`,
     [
+      makeStringId(title),
       authorId,
       title,
       description,
@@ -235,9 +262,13 @@ export const createBlogpost = async (
   );
 };
 
-export const findBlogpostById = (id: string) => {
+export const findBlogpostById = (id: string): Promise<BrabantApi.BlogpostData> => {
   return findBlogpost("blogpost_id", id);
 };
+
+export const findBlogpostByStringId = (stringId: string): Promise<BrabantApi.BlogpostData> => {
+  return findBlogpost('string_id', stringId);
+}
 
 export const findBlogposts = async (
   limit: number = 100
@@ -246,14 +277,18 @@ export const findBlogposts = async (
     `
 		SELECT
         blogpost_id,
+        string_id,
         title,
         author_id,
+        username as author_username,
         description,
         release_ts,
         last_edit_ts,
         cover_image_path,
         content
 		FROM blogpost
+        INNER JOIN user_account
+        ON blogpost.author_id = user_account.user_id
 		LIMIT $1
 	`,
     [limit]
@@ -266,8 +301,11 @@ export const findBlogposts = async (
     description: row.description,
     releaseTs: row.release_ts,
     lastEditTs: row.last_edit_ts,
-    estimatedReadingTime: computeReadingTime(row.title + row.description + row.content),
-    stringId: makeStringId('               Hello Les%&&&&&&==== a|mis           ')
+    estimatedReadingTime: computeReadingTime(
+      row.title + row.description + row.content
+    ),
+    stringId: row.string_id,
+    authorUsername: row.author_username
   }));
 };
 

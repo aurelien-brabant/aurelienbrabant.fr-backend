@@ -8,6 +8,7 @@ declare namespace BrabantApi {
 		title: string;
 		description: string;
 		authorId: number;
+		authorUsername: string;
 		releaseTs: Date;
 		lastEditTs: Date;
 		estimatedReadingTime: number;
@@ -23,6 +24,7 @@ declare namespace BrabantApi {
 		title: string;
 		description: string;
 		authorId: number;
+		authorUsername: string;
 		content: string;
 		releaseTs: Date;
 		lastEditTs: Date;

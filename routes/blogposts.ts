@@ -8,6 +8,7 @@ import {
   findBlogposts,
   removeBlogpostById,
   findBlogpostById,
+  findBlogpostByStringId,
   createBlogpost,
   createBlogpostFromMarkdown,
 } from "../services/blogposts";
@@ -22,6 +23,43 @@ router.get("/", async (_req, res) => {
   } catch {
     res.status(500).send("Internal Server Error");
   }
+});
+
+router.get("/search", async (req, res) => {
+  const by: string | undefined = req.query.by as string;
+  const payload: string | undefined = req.query.payload as string;
+  let blogpostData: BrabantApi.BlogpostData | null = null;
+
+  console.log(req.query);
+
+  if (by && payload) {
+    try {
+      switch (by) {
+        case "string_id":
+          blogpostData = await findBlogpostByStringId(payload);
+                                                     
+          break;
+        default:
+          return res.status(400).json({
+            msg: `Could not find a blogpost by ${by}`,
+          });
+      }
+
+      if (!blogpostData) {
+        return res.status(404).json({
+          msg: `Could not find a blogpost by ${by} with provided payload '${payload}'`,
+        });
+      }
+
+      return res.json(blogpostData);
+    } catch (e) {
+      return res.json(500).send("Internal Server Error");
+    }
+  }
+
+  return res.status(400).json({
+    msg: `search route requires a 'by' and 'payload' query parameters`,
+  });
 });
 
 router.post(
@@ -80,7 +118,8 @@ router.post(
       const uploaded = [];
 
       for (const filename of filenames) {
-        const markdownData = (req.files[filename] as fileUpload.UploadedFile).data;
+        const markdownData = (req.files[filename] as fileUpload.UploadedFile)
+          .data;
 
         const errors = await createBlogpostFromMarkdown(
           markdownData.toString()

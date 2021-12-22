@@ -21,6 +21,7 @@ const sqlCreateUserAccountTable: SqlQuery = `CREATE TABLE IF NOT EXISTS user_acc
 
 const sqlCreateBlogpostTable: SqlQuery = `CREATE TABLE IF NOT EXISTS blogpost (
 		blogpost_id			SERIAL PRIMARY KEY,
+		string_id			VARCHAR(100) NOT NULL,
 		title				VARCHAR(100) NOT NULL,
 		author_id			INTEGER REFERENCES user_account(user_id) NOT NULL,
 		description			VARCHAR(300) NOT NULL,
