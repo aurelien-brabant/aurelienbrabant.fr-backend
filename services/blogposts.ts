@@ -82,6 +82,55 @@ const validateBlogpostMarkdownMetadata = (meta: any) => {
   return errors;
 };
 
+const insertBlogostTags = async (
+  blogpostId: string,
+  tags: string[]
+): Promise<void> => {
+  let tagId: string;
+
+  for (const tag of tags) {
+    let res = await db.query(
+      `SELECT blogpost_tag_id
+        FROM blogpost_tag
+        WHERE tag = $1`,
+      [tag]
+    );
+
+    // create tag in database if this is a new tag
+    if (res.rows.length === 0) {
+      res = await db.query(
+        `INSERT INTO blogpost_tag(tag)
+                              VALUES($1)
+                              RETURNING blogpost_tag_id;`,
+        [tag]
+      );
+    }
+
+    tagId = res.rows[0].blogpost_tag_id;
+
+    // tag the blogpost
+    await db.query(
+      `INSERT INTO blogpost_blogpost_tag(blogpost_id, blogpost_tag_id)
+      VALUES($1, $2);`,
+      [blogpostId, tagId]
+    );
+  }
+};
+
+const extractBlogpostTags = async (blogpostId: string): Promise<string[]> => {
+  const res = await db.query(
+    `SELECT tag
+      FROM blogpost_blogpost_tag
+      INNER JOIN blogpost_tag
+      ON blogpost_tag.blogpost_tag_id = blogpost_blogpost_tag.blogpost_tag_id
+      WHERE blogpost_id = $1
+    ;`,
+    [blogpostId]
+  );
+
+  return res.rows.map((row) => row.tag);
+};
+
 /**
  * @description Returns estimated reading time for the given input
  * @param {string} The content to compute the estimated reading time of
@@ -114,8 +163,8 @@ const makeStringId = (blogpostTitle: string) => {
     .split(" ")
     .join("-")
     .replace(/[^0-9\p{L}-]/giu, "");
-    // remove everything that is NOT in this charset
-    // \p{L} matches any kind of letter from any language
+  // remove everything that is NOT in this charset
+  // \p{L} matches any kind of letter from any language
 };
 
 const findBlogpost = async (
@@ -148,6 +197,8 @@ const findBlogpost = async (
 
   const row = res.rows[0];
 
+  const tags = await extractBlogpostTags(res.rows[0].blogpost_id);
+
   return {
     blogpostId: row.blogpost_id,
     title: row.title,
@@ -162,6 +213,7 @@ const findBlogpost = async (
       row.title + row.description + row.content
     ),
     stringId: row.string_id,
+    tags,
   };
 };
 
@@ -227,7 +279,8 @@ export const createBlogpostFromMarkdown = async (
     content,
     data.coverImagePath,
     data.releaseTs !== undefined ? data.releaseTs : new Date(Date.now()),
-    data.lastEditTs !== undefined ? data.lastEditTs : new Date(Date.now())
+    data.lastEditTs !== undefined ? data.lastEditTs : new Date(Date.now()),
+    data.tags !== undefined && Array.isArray(data.tags) ? data.tags : []
   );
 
   return [];
@@ -242,12 +295,14 @@ export const createBlogpost = async (
   content: string,
   coverImagePath: string,
   releaseTs: Date,
-  lastEditTs: Date
-) => {
-  await db.query(
+  lastEditTs: Date,
+  tags: string[]
+): Promise<string> => {
+  const res = await db.query(
     `
 		INSERT INTO blogpost(string_id, author_id, title, description, content, cover_image_path, release_ts, last_edit_ts)
 		VALUES($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING blogpost_id
 	`,
     [
       makeStringId(title),
@@ -260,15 +315,26 @@ export const createBlogpost = async (
       lastEditTs,
     ]
   );
+
+  const blogpostId = res.rows[0].blogpost_id;
+
+  // tags should always be inserted uppercase
+  insertBlogostTags(blogpostId, tags.map(tag => tag.toUpperCase()));
+
+  return blogpostId;
 };
 
-export const findBlogpostById = (id: string): Promise<BrabantApi.BlogpostData> => {
+export const findBlogpostById = (
+  id: string
+): Promise<BrabantApi.BlogpostData> => {
   return findBlogpost("blogpost_id", id);
 };
 
-export const findBlogpostByStringId = (stringId: string): Promise<BrabantApi.BlogpostData> => {
-  return findBlogpost('string_id', stringId);
-}
+export const findBlogpostByStringId = (
+  stringId: string
+): Promise<BrabantApi.BlogpostData> => {
+  return findBlogpost("string_id", stringId);
+};
 
 export const findBlogposts = async (
   limit: number = 100
@@ -294,19 +360,26 @@ export const findBlogposts = async (
     [limit]
   );
 
-  return res.rows.map((row) => ({
-    blogpostId: row.blogpost_id,
-    title: row.title,
-    authorId: row.author_id,
-    description: row.description,
-    releaseTs: row.release_ts,
-    lastEditTs: row.last_edit_ts,
-    estimatedReadingTime: computeReadingTime(
-      row.title + row.description + row.content
-    ),
-    stringId: row.string_id,
-    authorUsername: row.author_username
-  }));
+  return await Promise.all(
+    res.rows.map(async (row) => {
+      const tags = await extractBlogpostTags(row.blogpost_id);
+
+      return {
+        blogpostId: row.blogpost_id,
+        title: row.title,
+        authorId: row.author_id,
+        description: row.description,
+        releaseTs: row.release_ts,
+        lastEditTs: row.last_edit_ts,
+        estimatedReadingTime: computeReadingTime(
+          row.title + row.description + row.content
+        ),
+        stringId: row.string_id,
+        authorUsername: row.author_username,
+        tags,
+      };
+    })
+  );
 };
 
 export const removeBlogpostById = async (id: string) => {

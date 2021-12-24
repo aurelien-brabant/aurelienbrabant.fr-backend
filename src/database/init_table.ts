@@ -44,6 +44,19 @@ const sqlCreateBlogpostCommentTable: SqlQuery = `CREATE TABLE IF NOT EXISTS blog
 		post_creation_ts	TIMESTAMP NOT NULL
 	);`;
 
+const sqlCreateBlogpostTagTable: SqlQuery = `CREATE TABLE IF NOT EXISTS blogpost_tag (
+		blogpost_tag_id	SERIAL PRIMARY KEY,
+		tag				VARCHAR(20) UNIQUE NOT NULL
+);`;
+
+// One tag can belong to many blogposts while many blogposts can have the same tag.
+// Therefore we need ManytoMany relationship through the use of an intermediary table.
+
+const sqlCreateBlogpostToTagTable = `CREATE TABLE IF NOT EXISTS blogpost_blogpost_tag (
+		blogpost_id		INTEGER REFERENCES blogpost(blogpost_id),
+		blogpost_tag_id	INTEGER REFERENCES blogpost_tag(blogpost_tag_id)
+);`;
+
 /*
  * Email verification token 
  */
@@ -72,9 +85,12 @@ export default [
 	
 	sqlCreateBlogpostTable,
 	sqlCreateBlogpostCommentTable,
+	sqlCreateBlogpostTagTable,
+	sqlCreateBlogpostToTagTable,
 
 	sqlCreateEmailVerificationTokenTable,
 	
 	sqlCreateUserEventTable,
 	sqlCreateUserLoginEventTable,
+	
 ];

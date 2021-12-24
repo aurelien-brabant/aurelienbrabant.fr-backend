@@ -13,6 +13,7 @@ declare namespace BrabantApi {
 		lastEditTs: Date;
 		estimatedReadingTime: number;
 		stringId: string;
+		tags: string[];
 	};
 
 	/**
@@ -31,6 +32,7 @@ declare namespace BrabantApi {
 		coverImagePath: string;
 		estimatedReadingTime: number;
 		stringId: string;
+		tags: string[];
 	};
 
 	/**
