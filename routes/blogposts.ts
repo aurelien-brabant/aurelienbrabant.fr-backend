@@ -11,6 +11,7 @@ import {
   findBlogpostByStringId,
   createBlogpost,
   createBlogpostFromMarkdown,
+  getTags,
 } from "../services/blogposts";
 
 const router = Router();
@@ -22,6 +23,19 @@ router.get("/", async (_req, res) => {
     res.json(posts);
   } catch {
     res.status(500).send("Internal Server Error");
+  }
+});
+
+router.get('/tags', async (_req, res) => {
+  try {
+    const tags = await getTags();
+
+    return res.json(tags);
+  }
+
+  catch (e) {
+    console.error(e);
+    return res.status(500).send('Internal Server Error');
   }
 });
 
@@ -71,6 +85,7 @@ router.post(
   body("content").isString(),
   body("releaseTs").isDate().optional(),
   body("lastEditTs").isDate().optional(),
+  body("tags").isArray().optional(),
   validatorMiddleware,
   async (req, res) => {
     const {
@@ -81,6 +96,7 @@ router.post(
       content,
       releaseTs,
       lastEditTs,
+      tags
     } = req.body;
 
     try {
@@ -91,7 +107,8 @@ router.post(
         content,
         coverImagePath,
         releaseTs !== undefined ? releaseTs : new Date(Date.now()),
-        lastEditTs !== undefined ? lastEditTs : new Date(Date.now())
+        lastEditTs !== undefined ? lastEditTs : new Date(Date.now()),
+        tags ? tags : []
       );
 
       return res.json(creationData);

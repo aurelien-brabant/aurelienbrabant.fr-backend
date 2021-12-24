@@ -131,6 +131,13 @@ const extractBlogpostTags = async (blogpostId: string): Promise<string[]> => {
   return res.rows.map((row) => row.tag);
 };
 
+export const getTags = async (): Promise<string[]> => {
+  const res = await db.query(`SELECT tag
+                             FROM blogpost_tag`);
+
+  return res.rows.map(row => row.tag);
+};
+
 /**
  * @description Returns estimated reading time for the given input
  * @param {string} The content to compute the estimated reading time of
@@ -319,7 +326,10 @@ export const createBlogpost = async (
   const blogpostId = res.rows[0].blogpost_id;
 
   // tags should always be inserted uppercase
-  insertBlogostTags(blogpostId, tags.map(tag => tag.toUpperCase()));
+  insertBlogostTags(
+    blogpostId,
+    tags.map((tag) => tag.toUpperCase())
+  );
 
   return blogpostId;
 };
