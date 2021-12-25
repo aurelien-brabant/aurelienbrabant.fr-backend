@@ -12,30 +12,33 @@ import {
   createBlogpost,
   createBlogpostFromMarkdown,
   getTags,
+  hasAuthorBlogpostWithTitle,
 } from "../services/blogposts";
 
 const router = Router();
 
 router.get("/", async (_req, res) => {
   try {
-    const posts = await findBlogposts();
+    const posts = await findBlogposts(),
+      tags = await getTags();
 
-    res.json(posts);
+    return res.json({
+      tags,
+      posts,
+    });
   } catch {
-    res.status(500).send("Internal Server Error");
+    return res.status(500).send("Internal Server Error");
   }
 });
 
-router.get('/tags', async (_req, res) => {
+router.get("/tags", async (_req, res) => {
   try {
     const tags = await getTags();
 
     return res.json(tags);
-  }
-
-  catch (e) {
+  } catch (e) {
     console.error(e);
-    return res.status(500).send('Internal Server Error');
+    return res.status(500).send("Internal Server Error");
   }
 });
 
@@ -51,7 +54,7 @@ router.get("/search", async (req, res) => {
       switch (by) {
         case "string_id":
           blogpostData = await findBlogpostByStringId(payload);
-                                                     
+
           break;
         default:
           return res.status(400).json({
@@ -96,10 +99,19 @@ router.post(
       content,
       releaseTs,
       lastEditTs,
-      tags
+      tags,
     } = req.body;
 
     try {
+      if (await hasAuthorBlogpostWithTitle(authorId, title)) {
+        return res.status(409).json([
+          {
+            field: "title",
+            msg: `This user already has a blogpost entitled "${title}"`,
+          },
+        ]);
+      }
+
       const creationData = createBlogpost(
         authorId,
         title,

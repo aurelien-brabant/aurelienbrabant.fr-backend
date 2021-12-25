@@ -185,6 +185,7 @@ const findBlogpost = async (
     title,
     author_id,
     username AS author_username,
+    picture_uri AS author_picture_uri,
     description,
     content,
     release_ts,
@@ -212,6 +213,7 @@ const findBlogpost = async (
     description: row.description,
     authorId: row.author_id,
     authorUsername: row.author_username,
+    authorPictureURI: row.author_picture_uri,
     content: row.content,
     releaseTs: row.release_ts,
     lastEditTs: row.last_edit_ts,
@@ -223,6 +225,16 @@ const findBlogpost = async (
     tags,
   };
 };
+
+export const hasAuthorBlogpostWithTitle = async (authorId: string, title: string): Promise<boolean> => {
+  const res = await db.query(`SELECT COUNT(*) AS count
+                             FROM blogpost
+                             WHERE author_id = $1 AND title ILIKE $2
+                             ;`, [authorId, title]);
+
+  // if count != 0 we'll return true
+  return Boolean(+res.rows[0].count);
+}
 
 // Will attempt to validate the post metadata, ensuring that required fields are present
 // and that they are in the expected format.
@@ -277,6 +289,15 @@ export const createBlogpostFromMarkdown = async (
         msg: "Could not attach the post to an existing user in database. Either authorId or authorEmail are not present, or these are not refering to a valid user.",
       },
     ];
+  }
+
+  if (await hasAuthorBlogpostWithTitle(authorId, data.title)) {
+    return [
+      {
+        field: 'title',
+        msg: `This user already has a blogpost entitled "${data.title}"`
+      }
+    ]
   }
 
   await createBlogpost(
@@ -357,6 +378,7 @@ export const findBlogposts = async (
         title,
         author_id,
         username as author_username,
+        picture_uri as author_picture_uri,
         description,
         release_ts,
         last_edit_ts,
@@ -378,6 +400,7 @@ export const findBlogposts = async (
         blogpostId: row.blogpost_id,
         title: row.title,
         authorId: row.author_id,
+        authorPictureURI: row.author_picture_uri,
         description: row.description,
         releaseTs: row.release_ts,
         lastEditTs: row.last_edit_ts,

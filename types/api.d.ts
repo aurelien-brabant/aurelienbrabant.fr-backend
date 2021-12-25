@@ -2,6 +2,11 @@ declare namespace BrabantApi {
 	/**
 	 * API route: GET /blogposts
 	 */
+	
+	export type GetBlogposts = {
+		tags: string[];
+		posts: BlogpostPreview[];
+	}
 
 	export type BlogpostPreview = {
 		blogpostId: number;
@@ -9,6 +14,7 @@ declare namespace BrabantApi {
 		description: string;
 		authorId: number;
 		authorUsername: string;
+		authorPictureURI: string;
 		releaseTs: Date;
 		lastEditTs: Date;
 		estimatedReadingTime: number;
@@ -26,6 +32,7 @@ declare namespace BrabantApi {
 		description: string;
 		authorId: number;
 		authorUsername: string;
+		authorPictureURI: string;
 		content: string;
 		releaseTs: Date;
 		lastEditTs: Date;
@@ -43,6 +50,7 @@ declare namespace BrabantApi {
 		userId: number;
 		email: string;
 		username: string;
+		pictureURI: string;
 		role: number;
 	};
 
@@ -56,6 +64,7 @@ declare namespace BrabantApi {
 		username: string;
 		firstname?: string;
 		lastname?: string;
+		pictureURI: string;
 		role: number;
 		isEmailVerified: boolean;
 		isActivated: boolean;

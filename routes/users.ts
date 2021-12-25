@@ -8,6 +8,8 @@ import {
 } from "../services/users";
 import { body, param } from "express-validator";
 
+import { DEFAULT_USER_PICTURE_PATH } from "../utils/constants";
+
 const router = Router();
 
 /* GET users listing. */
@@ -24,12 +26,13 @@ router.post(
   body("email").isEmail(),
   body("username").isLength({ min: 5, max: 25 }),
   body("password").isLength({ min: 8, max: 100 }),
+  body("pictureURI").isString().isLength({ max: 255 }).optional(),
   validatorMiddleware,
   async (req, res) => {
-    const { email, username, password: plainTextPassword } = req.body;
+    const { email, username, password: plainTextPassword, pictureURI } = req.body;
 
     try {
-      return res.json(await createUser(email, username, plainTextPassword));
+      return res.json(await createUser(email, username, plainTextPassword, pictureURI ? pictureURI : DEFAULT_USER_PICTURE_PATH));
     } catch (e) {
       console.error(e);
       return res.status(500).send("Internal Server Error");

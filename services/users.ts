@@ -5,7 +5,7 @@ import { pool as db } from "../src/database/database";
 
 const findUserBy = async (searchBy: string, searchValue: string): Promise<BrabantApi.UserData> => {
 	const res = await db.query(
-		`SELECT user_id, email, username, role, firstname, lastname, account_creation_ts, last_login_ts
+		`SELECT user_id, email, username, role, picture_uri, firstname, lastname, account_creation_ts, last_login_ts
 		FROM user_account
 		WHERE ${searchBy} = $1
 		LIMIT 1
@@ -27,6 +27,7 @@ const findUserBy = async (searchBy: string, searchValue: string): Promise<Braban
 		username: row.username,
 		firstname: row.firstname,
 		lastname: row.lastname,
+		pictureURI: row.picture_uri,
 		role: row.role,
 		isEmailVerified: row.is_email_verified,
 		isActivated: row.is_email_activated,
@@ -53,7 +54,7 @@ export const findUserById = async (id: string) => {
 
 export const findUsers = async (limit: number = 100): Promise<BrabantApi.UserPreview[]> => {
 	const res = await db.query(
-		`SELECT user_id, email, username, role
+		`SELECT user_id, email, username, picture_uri, role
 		FROM user_account
 		LIMIT $1
 	;`,
@@ -64,22 +65,23 @@ export const findUsers = async (limit: number = 100): Promise<BrabantApi.UserPre
 		userId: row.user_id,
 		email: row.email,
 		username: row.username,
+		pictureURI: row.picture_uri,
 		role: row.role,
 	}));
 };
 
 // }}}
 
-export const createUser = async (email: string, username: string, password: string): Promise<BrabantApi.CreateUserRet> => {
+export const createUser = async (email: string, username: string, password: string, pictureURI: string): Promise<BrabantApi.CreateUserRet> => {
 	const hash = await bcrypt.hash(password, 10);
 
 	const res = await db.query(
 		`INSERT
-		INTO user_account(email, username, password, account_creation_ts)
-		VALUES ($1, $2, $3, $4)
+		INTO user_account(email, username, password, picture_uri, account_creation_ts)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING email, username, account_creation_ts
 	`,
-		[email, username, hash, new Date()]
+		[email, username, hash, pictureURI, new Date()]
 	);
 
 	return {

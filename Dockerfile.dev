@@ -1,5 +1,7 @@
-FROM node:17-alpine3.12
+FROM		node:17-alpine3.12
 
-WORKDIR /usr/app
+WORKDIR		/usr/app
+
+RUN			yarn global add ts-node
 
 ENTRYPOINT [ "yarn", "dev" ]
