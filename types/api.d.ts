@@ -77,4 +77,24 @@ declare namespace BrabantApi {
 		username: string,
 		accountCreationTs: Date,
 	}
+
+	export type Technology = {
+		name: string;
+		logoURI: string;
+	}
+
+	export type ProjectPreview = {
+		name: string;
+		description: string;
+		coverURI: string;
+		technologies: Technology[];
+	}
+
+	export type Project = {
+		name: string;
+		description: string;
+		coverURI: string;
+		content: string;
+		technologies: Technology[];
+	};
 }

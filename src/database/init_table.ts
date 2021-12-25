@@ -81,6 +81,16 @@ const sqlCreateUserEventTable: SqlQuery = `CREATE TABLE IF NOT EXISTS user_event
 
 const sqlCreateUserLoginEventTable: SqlQuery = `CREATE TABLE IF NOT EXISTS user_login_event () INHERITS(user_event);`;
 
+const sqlCreateProjectTable: SqlQuery = `CREATE TABLE IF NOT EXISTS project (
+		project_id		SERIAL PRIMARY KEY,
+		name			VARCHAR(100),
+		description		VARCHAR(300),
+		content			TEXT,
+		start_ts		TIMESTAMP,
+		end_ts			TIMESTAMP,
+		cover_uri		VARCHAR(255)
+	);`
+
 export default [
 	sqlCreateUserAccountTable,
 	
@@ -93,5 +103,6 @@ export default [
 	
 	sqlCreateUserEventTable,
 	sqlCreateUserLoginEventTable,
-	
+
+	sqlCreateProjectTable
 ];
