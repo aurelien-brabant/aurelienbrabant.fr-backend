@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { pool as db } from '../src/database/database';
+import passport from 'passport';
 
-var router = Router();
+const router = Router();
 
 /* GET home page. */
-router.get('/', function(_req, res) {
-  res.render('index', { title: 'Express' });
+router.get('/', passport.authenticate('jwt', { session: false }), function(_req, res) {
+  res.send('BRONTE');
+  //res.render('index', { title: 'Express' });
 });
 
 router.get('/testdb', async function(_req, _res) {

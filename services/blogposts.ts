@@ -1,6 +1,7 @@
 import { pool as db } from "../src/database/database";
 import matter from "gray-matter";
 import validator from "validator";
+import buildPatchQuery from "../src/database/buildPatchQuery";
 
 // Because we need to parse the file using gray-matter after it has been uploaded,
 // we need to perform metadata validation in the service. The validation errors, if any,
@@ -88,6 +89,10 @@ const insertBlogostTags = async (
 ): Promise<void> => {
   let tagId: string;
 
+  await db.query(`DELETE FROM blogpost_blogpost_tag WHERE blogpost_id = $1`, [
+    blogpostId,
+  ]);
+
   for (const tag of tags) {
     let res = await db.query(
       `SELECT blogpost_tag_id
@@ -135,7 +140,7 @@ export const getTags = async (): Promise<string[]> => {
   const res = await db.query(`SELECT tag
                              FROM blogpost_tag`);
 
-  return res.rows.map(row => row.tag);
+  return res.rows.map((row) => row.tag);
 };
 
 /**
@@ -226,15 +231,21 @@ const findBlogpost = async (
   };
 };
 
-export const hasAuthorBlogpostWithTitle = async (authorId: string, title: string): Promise<boolean> => {
-  const res = await db.query(`SELECT COUNT(*) AS count
+export const hasAuthorBlogpostWithTitle = async (
+  authorId: string,
+  title: string
+): Promise<boolean> => {
+  const res = await db.query(
+    `SELECT COUNT(*) AS count
                              FROM blogpost
                              WHERE author_id = $1 AND title ILIKE $2
-                             ;`, [authorId, title]);
+                             ;`,
+    [authorId, title]
+  );
 
   // if count != 0 we'll return true
   return Boolean(+res.rows[0].count);
-}
+};
 
 // Will attempt to validate the post metadata, ensuring that required fields are present
 // and that they are in the expected format.
@@ -294,10 +305,10 @@ export const createBlogpostFromMarkdown = async (
   if (await hasAuthorBlogpostWithTitle(authorId, data.title)) {
     return [
       {
-        field: 'title',
-        msg: `This user already has a blogpost entitled "${data.title}"`
-      }
-    ]
+        field: "title",
+        msg: `This user already has a blogpost entitled "${data.title}"`,
+      },
+    ];
   }
 
   await createBlogpost(
@@ -312,6 +323,39 @@ export const createBlogpostFromMarkdown = async (
   );
 
   return [];
+};
+
+export const editBlogpost = async (
+  blogpostId: string,
+  title?: string,
+  description?: string,
+  content?: string,
+  coverImagePath?: string,
+  privacy?: string,
+  tags?: string[]
+) => {
+  // process tags separately
+  if (tags) {
+    insertBlogostTags(blogpostId, tags);
+  }
+
+  const patchRes = buildPatchQuery({
+    blogpost_id: blogpostId,
+    title,
+    description,
+    content,
+    cover_image_path: coverImagePath,
+    privacy
+  });
+
+  console.log(patchRes);
+
+  await db.query(
+    `UPDATE blogpost ${patchRes.query} WHERE blogpost_id = $${
+      patchRes.args.length + 1
+    };`,
+    [...patchRes.args, blogpostId]
+  );
 };
 
 // TODO: watch for duplicate posts per user
@@ -410,6 +454,7 @@ export const findBlogposts = async (
         stringId: row.string_id,
         authorUsername: row.author_username,
         tags,
+        coverImagePath: row.cover_image_path
       };
     })
   );

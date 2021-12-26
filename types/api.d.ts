@@ -20,6 +20,7 @@ declare namespace BrabantApi {
 		estimatedReadingTime: number;
 		stringId: string;
 		tags: string[];
+		coverImagePath: string;
 	};
 
 	/**
