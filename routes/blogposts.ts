@@ -134,64 +134,6 @@ router.post(
   }
 );
 
-// NOTE: apply same validation constraints as POST /blogposts
-
-router.post(
-  "/markdown",
-  fileUpload({ limits: { fileSize: 1048576 } }),
-  async (req, res) => {
-    if (!req.files) {
-      return res.status(400).json({ msg: "No markdown file provided" });
-    }
-
-    const filenames = Object.keys(req.files);
-
-    if (filenames.length > 0) {
-      const uploaded = [];
-
-      for (const filename of filenames) {
-        const markdownData = (req.files[filename] as fileUpload.UploadedFile)
-          .data;
-
-        const errors = await createBlogpostFromMarkdown(
-          markdownData.toString()
-        );
-
-        if (errors.length) {
-          return res.status(400).json({ errors });
-        }
-
-        uploaded.push(filename);
-      }
-
-      return res.json({ uploaded });
-    }
-
-    return res.status(400).json({ error: "No file to upload" });
-  }
-);
-
-router.patch('/:id',
-param('id').isNumeric(),
-body("title").optional().isLength({ min: 10, max: 100 }),
-body("description").optional().isLength({ min: 30, max: 300 }),
-body("coverImagePath").optional().isLength({ min: 1, max: 255 }),
-body("content").optional().isString(),
-body("tags").optional().isArray(),
-body('privacy').optional().isIn(['PRIVATE-PREV', 'PRIVATE', 'PUBLIC']),
-validationResultMiddleware,
-async (req, res) => {
-  const { title, description, coverImagePath, content, tags, privacy } = req.body;
-
-  try {
-    await editBlogpost(req.params.id, title, description, content, coverImagePath, privacy, tags);
-
-    return res.json({ msg: 'PATCH ok' });
-  } catch (e) {
-    return res.status(500).json({ msg: 'Internal Server Error' });
-  }
-});
-
 router.get("/:id", param("id").isNumeric(), async (req, res) => {
   const id = req.params.id;
 
@@ -209,16 +151,6 @@ router.get("/:id", param("id").isNumeric(), async (req, res) => {
   }
 });
 
-router.delete("/:id", param("id").isNumeric(), async (req, res) => {
-  const { id } = req.params;
-  try {
-    const _deleted = await removeBlogpostById(id);
 
-    return res.status(200).json({});
-  } catch (e) {
-    console.error(e);
-    return res.status(500).send("Internal Server Error");
-  }
-});
 
 export default router;

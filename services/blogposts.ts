@@ -181,7 +181,8 @@ const makeStringId = (blogpostTitle: string) => {
 
 const findBlogpost = async (
   searchCriteria: string,
-  searchValue: string
+  searchValue: string,
+  publicOnly: boolean = true
 ): Promise<BrabantApi.BlogpostData> => {
   const res = await db.query(
     `SELECT
@@ -199,7 +200,7 @@ const findBlogpost = async (
     FROM blogpost
     INNER JOIN user_account
     ON user_account.user_id = blogpost.author_id
-    WHERE ${searchCriteria} = $1
+    WHERE ${searchCriteria} = $1 ${publicOnly ? 'AND privacy = \'PUBLIC\'' : ''}
     ;`,
     [searchValue]
   );
@@ -400,18 +401,24 @@ export const createBlogpost = async (
 };
 
 export const findBlogpostById = (
-  id: string
+  id: string,
+  publicOnly: boolean = true,
 ): Promise<BrabantApi.BlogpostData> => {
-  return findBlogpost("blogpost_id", id);
+  return findBlogpost("blogpost_id", id, publicOnly);
 };
 
 export const findBlogpostByStringId = (
-  stringId: string
+  stringId: string,
 ): Promise<BrabantApi.BlogpostData> => {
   return findBlogpost("string_id", stringId);
 };
 
+/**
+ * publicOnly is usually set to false for administrative requests.
+ */
+
 export const findBlogposts = async (
+  publicOnly: boolean = true,
   limit: number = 100
 ): Promise<BrabantApi.BlogpostPreview[]> => {
   const res = await db.query(
@@ -431,6 +438,7 @@ export const findBlogposts = async (
 		FROM blogpost
         INNER JOIN user_account
         ON blogpost.author_id = user_account.user_id
+    ${publicOnly ? 'WHERE privacy = \'PUBLIC\'' : ''}
 		LIMIT $1
 	`,
     [limit]

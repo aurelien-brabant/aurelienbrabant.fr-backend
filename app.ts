@@ -10,7 +10,11 @@ import indexRouter from './routes/index';
 import usersRouter from './routes/users';
 import projectsRouter from './routes/projects';
 import blogpostsRouter from './routes/blogposts';
+import blogpostsAdminRouter from './routes/admin_blogposts';
 import authRouter from './routes/auth';
+
+
+import isAdministrator from './middlewares/isAdministrator';
 
 import bodyParser from 'body-parser';
 
@@ -33,5 +37,7 @@ app.use('/users', usersRouter);
 app.use('/blogposts', blogpostsRouter);
 app.use('/projects', projectsRouter);
 app.use('/auth', authRouter);
+
+app.use('/admin/blogposts', [passport.authenticate('jwt', { session: false }), isAdministrator, blogpostsAdminRouter]);
 
 export default app;
