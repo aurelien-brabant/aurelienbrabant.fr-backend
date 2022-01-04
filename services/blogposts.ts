@@ -431,6 +431,7 @@ export const findBlogposts = async (
         INNER JOIN user_account
         ON blogpost.author_id = user_account.user_id
     ${publicOnly ? 'WHERE privacy = \'PUBLIC\'' : ''}
+        ORDER BY release_ts DESC
 		LIMIT $1
 	`,
     [limit]
