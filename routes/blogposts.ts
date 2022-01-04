@@ -1,22 +1,13 @@
 import { Router } from "express";
-import fileUpload from "express-fileupload";
 
-import { body, param } from "express-validator";
-import validationResultMiddleware from "../middlewares/validationResult";
-import validatorMiddleware from "../middlewares/validationResult";
+import { param } from "express-validator";
 
 import {
   findBlogposts,
-  removeBlogpostById,
-  findBlogpostById,
   findBlogpostByStringId,
-  createBlogpost,
-  createBlogpostFromMarkdown,
+  findBlogpostById,
   getTags,
-  hasAuthorBlogpostWithTitle,
-  editBlogpost,
 } from "../services/blogposts";
-import buildPatchQuery from "../src/database/buildPatchQuery";
 
 const router = Router();
 
@@ -25,7 +16,7 @@ router.get("/", async (_req, res) => {
     const posts = await findBlogposts(),
       tags = await getTags();
 
-    return res.json({
+    return res.status(200).json({
       tags,
       posts,
     });
@@ -38,7 +29,7 @@ router.get("/tags", async (_req, res) => {
   try {
     const tags = await getTags();
 
-    return res.json(tags);
+    return res.status(200).json(tags);
   } catch (e) {
     console.error(e);
     return res.status(500).send("Internal Server Error");
@@ -71,7 +62,7 @@ router.get("/search", async (req, res) => {
         });
       }
 
-      return res.json(blogpostData);
+      return res.status(200).json(blogpostData);
     } catch (e) {
       return res.json(500).send("Internal Server Error");
     }
@@ -81,58 +72,6 @@ router.get("/search", async (req, res) => {
     msg: `search route requires a 'by' and 'payload' query parameters`,
   });
 });
-
-router.post(
-  "/",
-  body("title").isLength({ min: 10, max: 100 }),
-  body("description").isLength({ min: 30, max: 300 }),
-  body("coverImagePath").isLength({ min: 1, max: 255 }),
-  body("authorId").isNumeric(),
-  body("releaseTs").isDate().optional(),
-  body("lastEditTs").isDate().optional(),
-  body("content").isString(),
-  body("tags").isArray().optional(),
-  validatorMiddleware,
-  async (req, res) => {
-    const {
-      title,
-      description,
-      coverImagePath,
-      authorId,
-      content,
-      releaseTs,
-      lastEditTs,
-      tags,
-    } = req.body;
-
-    try {
-      if (await hasAuthorBlogpostWithTitle(authorId, title)) {
-        return res.status(409).json([
-          {
-            field: "title",
-            msg: `This user already has a blogpost entitled "${title}"`,
-          },
-        ]);
-      }
-
-      const creationData = createBlogpost(
-        authorId,
-        title,
-        description,
-        content,
-        coverImagePath,
-        releaseTs !== undefined ? releaseTs : new Date(Date.now()),
-        lastEditTs !== undefined ? lastEditTs : new Date(Date.now()),
-        tags ? tags : []
-      );
-
-      return res.json(creationData);
-    } catch (e) {
-      console.error(e);
-      return res.status(500).send("Internal Server Error");
-    }
-  }
-);
 
 router.get("/:id", param("id").isNumeric(), async (req, res) => {
   const id = req.params.id;
@@ -144,13 +83,11 @@ router.get("/:id", param("id").isNumeric(), async (req, res) => {
       return res.status(404).json({ msg: "No such blogpost" });
     }
 
-    return res.json(blogpostData);
+    return res.status(200).json(blogpostData);
   } catch (e) {
     console.error(e);
     return res.status(500).send("Internal server error");
   }
 });
-
-
 
 export default router;

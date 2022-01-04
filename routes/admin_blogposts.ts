@@ -8,7 +8,9 @@ import {
   findBlogpostById,
   findBlogposts,
   removeBlogpostById,
-  getTags
+  getTags,
+  createBlogpost,
+  hasAuthorBlogpostWithTitle
 } from "../services/blogposts";
 
 const router = Router();
@@ -17,12 +19,12 @@ const router = Router();
  * Retrieve all the blogposts without caring about the privacy of it
  */
 
-router.get("/", async (req, res) => {
+router.get("/", async (_req, res) => {
   try {
     const posts = await findBlogposts(false);
     const tags = await getTags();
 
-    return res.json({ tags, posts });
+    return res.status(200).json({ tags, posts });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ msg: "Internal Server Error" });
@@ -61,7 +63,7 @@ router.post(
         uploaded.push(filename);
       }
 
-      return res.json({ uploaded });
+      return res.status(201).json({ uploaded });
     }
 
     return res.status(400).json({ error: "No file to upload" });
@@ -89,6 +91,59 @@ router.get("/:id", param("id").isNumeric(), async (req, res) => {
     return res.status(500).send("Internal server error");
   }
 });
+
+router.post(
+  "/",
+  body("title").isLength({ min: 10, max: 100 }),
+  body("description").isLength({ min: 30, max: 300 }),
+  body("coverImagePath").isLength({ min: 1, max: 255 }),
+  body("authorId").isNumeric(),
+  body("releaseTs").isDate().optional(),
+  body("lastEditTs").isDate().optional(),
+  body("content").isString(),
+  body("tags").isArray().optional(),
+  validationResultMiddleware,
+  async (req, res) => {
+    const {
+      title,
+      description,
+      coverImagePath,
+      authorId,
+      content,
+      releaseTs,
+      lastEditTs,
+      tags,
+    } = req.body;
+
+    try {
+      if (await hasAuthorBlogpostWithTitle(authorId, title)) {
+        return res.status(409).json([
+          {
+            field: "title",
+            msg: `This user already has a blogpost entitled "${title}"`,
+          },
+        ]);
+      }
+
+      const creationData = createBlogpost(
+        authorId,
+        title,
+        description,
+        content,
+        coverImagePath,
+        releaseTs !== undefined ? releaseTs : new Date(Date.now()),
+        lastEditTs !== undefined ? lastEditTs : new Date(Date.now()),
+        tags ? tags : []
+      );
+
+      return res.json(creationData);
+    } catch (e) {
+      console.error(e);
+      return res.status(500).send("Internal Server Error");
+    }
+  }
+);
+
 
 /**
  * Partial or complete edit of blogpost fields, including privacy.

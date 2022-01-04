@@ -12,8 +12,12 @@ import { Router } from "express";
 
 const router = Router();
 
+/**
+ * Get currently logged in user
+ */
+
 router.get('/login', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  return res.json(req.user);
+  return res.status(200).json(req.user);
 });
 
 router.post(
@@ -45,7 +49,7 @@ router.post(
       process.env.JWT_SECRET
     );
 
-    return res.json({ accessToken });
+    return res.status(201).json({ accessToken });
   }
 );
 

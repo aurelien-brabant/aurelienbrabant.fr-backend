@@ -15,9 +15,9 @@ const router = Router();
 /* GET users listing. */
 router.get("/", async function (_req, res, _next) {
   try {
-    return res.json(await findUsers());
+    return res.status(200).json(await findUsers());
   } catch {
-    return res.status(500).send("Internal Server Error");
+    return res.status(500).json({ msg: "Internal Server Error" });
   }
 });
 
@@ -29,13 +29,25 @@ router.post(
   body("pictureURI").isString().isLength({ max: 255 }).optional(),
   validatorMiddleware,
   async (req, res) => {
-    const { email, username, password: plainTextPassword, pictureURI } = req.body;
+    const {
+      email,
+      username,
+      password: plainTextPassword,
+      pictureURI,
+    } = req.body;
 
     try {
-      return res.json(await createUser(email, username, plainTextPassword, pictureURI ? pictureURI : DEFAULT_USER_PICTURE_PATH));
+      return res.status(201).json(
+        await createUser(
+          email,
+          username,
+          plainTextPassword,
+          pictureURI ? pictureURI : DEFAULT_USER_PICTURE_PATH
+        )
+      );
     } catch (e) {
       console.error(e);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).json({ msg: "Internal Server Error" });
     }
   }
 );
