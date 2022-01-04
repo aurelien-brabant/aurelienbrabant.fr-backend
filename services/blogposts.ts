@@ -189,6 +189,7 @@ const findBlogpost = async (
     blogpost_id,
     string_id,
     title,
+    privacy,
     author_id,
     username AS author_username,
     picture_uri AS author_picture_uri,
@@ -229,6 +230,7 @@ const findBlogpost = async (
     ),
     stringId: row.string_id,
     tags,
+    privacy: row.privacy as ('PRIVATE' | 'PUBLIC' | 'PRIVATE-PREV')
   };
 };
 

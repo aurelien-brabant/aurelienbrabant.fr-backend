@@ -41,6 +41,7 @@ declare namespace BrabantApi {
 		estimatedReadingTime: number;
 		stringId: string;
 		tags: string[];
+		privacy: 'PRIVATE' | 'PUBLIC' | 'PRIVATE-PREV';
 	};
 
 	/**

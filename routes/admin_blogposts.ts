@@ -8,6 +8,7 @@ import {
   findBlogpostById,
   findBlogposts,
   removeBlogpostById,
+  getTags
 } from "../services/blogposts";
 
 const router = Router();
@@ -18,9 +19,10 @@ const router = Router();
 
 router.get("/", async (req, res) => {
   try {
-    const post: BrabantApi.BlogpostPreview[] = await findBlogposts(false);
+    const posts = await findBlogposts(false);
+    const tags = await getTags();
 
-    return res.json(post);
+    return res.json({ tags, posts });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ msg: "Internal Server Error" });
@@ -81,7 +83,7 @@ router.get("/:id", param("id").isNumeric(), async (req, res) => {
       return res.status(404).json({ msg: "No such blogpost" });
     }
 
-    return res.json(blogpostData);
+    return res.status(200).json(blogpostData);
   } catch (e) {
     console.error(e);
     return res.status(500).send("Internal server error");
@@ -117,7 +119,7 @@ router.patch(
         tags
       );
 
-      return res.json({ msg: "PATCH ok" });
+      return res.status(200).json({ msg: "PATCH ok" });
     } catch (e) {
       return res.status(500).json({ msg: "Internal Server Error" });
     }
