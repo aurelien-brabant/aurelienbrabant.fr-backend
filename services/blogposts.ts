@@ -2,6 +2,7 @@ import { pool as db } from "../src/database/database";
 import matter from "gray-matter";
 import validator from "validator";
 import buildPatchQuery from "../src/database/buildPatchQuery";
+import slugify from 'slugify';
 
 // Because we need to parse the file using gray-matter after it has been uploaded,
 // we need to perform metadata validation in the service. The validation errors, if any,
@@ -167,17 +168,6 @@ const computeReadingTime = (input: string): number => {
  *
  * Example: "Everything about the typescript transpiler" => "everything-about-the-typescript-transpiler"
  */
-
-const makeStringId = (blogpostTitle: string) => {
-  return blogpostTitle
-    .toLowerCase()
-    .trim()
-    .split(" ")
-    .join("-")
-    .replace(/[^0-9\p{L}-]/giu, "");
-  // remove everything that is NOT in this charset
-  // \p{L} matches any kind of letter from any language
-};
 
 const findBlogpost = async (
   searchCriteria: string,
@@ -380,7 +370,7 @@ export const createBlogpost = async (
         RETURNING blogpost_id
 	`,
     [
-      makeStringId(title),
+      slugify(title),
       authorId,
       title,
       description,

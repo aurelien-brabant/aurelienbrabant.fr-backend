@@ -25,6 +25,7 @@
     "passport": "^0.5.2",
     "passport-jwt": "^4.0.0",
     "pg": "^8.7.1",
+    "slugify": "^1.6.5",
     "validator": "^13.7.0"
   },
   "devDependencies": {
