@@ -97,8 +97,8 @@ const sqlCreateProjectTable: SqlQuery = `CREATE TABLE IF NOT EXISTS project (
 
 const sqlCreateTechnologyTable: SqlQuery = `CREATE TABLE IF NOT EXISTS technology (
 		technology_id	SERIAL PRIMARY KEY,
-		name			VARCHAR(50),
-		logoURI			VARCHAR(255),
+		name			VARCHAR(50) UNIQUE,
+		logo_uri		VARCHAR(255),
 		exp_yo			SMALLINT
 	);`
 

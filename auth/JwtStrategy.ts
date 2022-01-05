@@ -12,11 +12,10 @@ const strat = new JwtStrategy(opts, async (payload, done) => {
 	console.log('strategy');
 
 	if (!user) {
-		done('User could not be found for JWT authentication', false);
-		return ;
+		return done('User could not be found for JWT authentication', false);
 	}
 
-	done(null, user);
+	return done(null, user);
 });
 
 export default strat;

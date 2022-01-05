@@ -14,6 +14,8 @@ import blogpostsRouter from './routes/blogposts';
 import blogpostsAdminRouter from './routes/admin_blogposts';
 import authRouter from './routes/auth';
 
+import technologiesRouter from './routes/technologies';
+import technologiesAdminRouter from './routes/admin_technologies';
 
 import isAdministrator from './middlewares/isAdministrator';
 
@@ -38,9 +40,11 @@ app.use('/users', usersRouter);
 app.use('/blogposts', blogpostsRouter);
 app.use('/projects', projectsRouter);
 app.use('/auth', authRouter);
+app.use('/technologies', technologiesRouter);
 
 app.use('/admin', [passport.authenticate('jwt', { session: false }), isAdministrator ]);
 app.use('/admin/blogposts', blogpostsAdminRouter);
 app.use('/admin/users', usersAdminRouter);
+app.use('/admin/technologies', technologiesAdminRouter);
 
 export default app;

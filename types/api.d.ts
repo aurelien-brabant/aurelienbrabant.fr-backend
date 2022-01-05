@@ -81,6 +81,7 @@ declare namespace BrabantApi {
 	}
 
 	export type Technology = {
+		technologyId: string;
 		name: string;
 		logoURI: string;
 	}
