@@ -89,7 +89,8 @@ const sqlCreateProjectTable: SqlQuery = `CREATE TABLE IF NOT EXISTS project (
 		start_ts		TIMESTAMP NOT NULL,
 		end_ts			TIMESTAMP,
 		cover_uri		VARCHAR(255) NOT NULL,
-		string_id		VARCHAR(100) UNIQUE
+		string_id		VARCHAR(100) UNIQUE,
+		privacy			VARCHAR(20) DEFAULT 'PRIVATE'
 	);`
 
 /**

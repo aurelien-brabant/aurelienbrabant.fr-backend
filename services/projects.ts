@@ -40,7 +40,8 @@ const insertTechnologies = async (
 
 const findProject = async (
   findBy: string,
-  value: string
+  value: string,
+  onlyPublic = true
 ): Promise<BrabantApi.Project | null> => {
   const res = await db.query(
     `SELECT
@@ -51,9 +52,12 @@ const findProject = async (
                               cover_uri,
                               start_ts,
                               end_ts,
-                              string_id
+                              string_id,
+                              privacy
                               FROM project
-                              WHERE ${findBy} = $1
+                              WHERE ${findBy} = $1 ${
+      onlyPublic ? "AND privacy = 'PUBLIC'" : ""
+    }
                              `,
     [value]
   );
@@ -65,6 +69,7 @@ const findProject = async (
   const row = res.rows[0];
 
   return {
+    projectId: row.project_id,
     name: row.name,
     description: row.description,
     content: row.content,
@@ -73,18 +78,21 @@ const findProject = async (
     endTs: row.end_ts,
     technologies: await extractTechnologies(row.project_id),
     stringId: row.string_id,
+    privacy: row.privacy as 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC'
   };
 };
 
-export const findProjectById = (projectId: string) => {
-  return findProject("project_id", projectId);
+export const findProjectById = (projectId: string, publicOnly = true) => {
+  return findProject("project_id", projectId, publicOnly);
 };
 
-export const findProjectByName = (projectName: string) => {
-  return findProject("name", projectName);
+export const findProjectByName = (projectName: string, publicOnly = true) => {
+  return findProject("name", projectName, publicOnly);
 };
 
-export const findProjects = async (): Promise<BrabantApi.ProjectPreview[]> => {
+export const findProjects = async (
+  onlyPublic = true
+): Promise<BrabantApi.ProjectPreview[]> => {
   const res = await db.query(`SELECT
                                project_id,
                                name,
@@ -93,10 +101,13 @@ export const findProjects = async (): Promise<BrabantApi.ProjectPreview[]> => {
                                start_ts,
                                end_ts,
                                string_id
-                             FROM project;`);
+                             FROM project
+                             ${onlyPublic ? "WHERE privacy = 'PUBLIC'" : ""}
+                             ;`);
 
   return await Promise.all(
     res.rows.map(async (row) => ({
+      projectId: row.project_id,
       name: row.name,
       description: row.description,
       coverURI: row.cover_uri,
@@ -132,6 +143,7 @@ export const createProject = async (
   insertTechnologies(row.project_id, technologiesIds);
 
   return {
+    projectId: row.project_id,
     name: row.name,
     description: row.description,
     coverURI: row.cover_uri,
@@ -140,7 +152,7 @@ export const createProject = async (
     endTs: row.end_ts,
     stringId: row.string_id,
   };
-}
+};
 
 export const editProject = async (
   projectId: string,
@@ -150,7 +162,8 @@ export const editProject = async (
   coverURI?: string,
   startTs?: Date,
   endTs?: Date,
-  technologiesIds?: string[]
+  technologiesIds?: string[],
+  privacy?: 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC'
 ) => {
   if (technologiesIds) {
     insertTechnologies(projectId, technologiesIds);
@@ -163,23 +176,28 @@ export const editProject = async (
     cover_uri: coverURI,
     start_ts: startTs,
     end_ts: endTs,
-    string_id: name ? slugify(name) : undefined
+    string_id: name ? slugify(name) : undefined,
+    privacy
   });
-  
+
   if (patchRes.args.length === 0) {
-    return ;
+    return;
   }
 
   await db.query(
     `UPDATE project ${patchRes.query} WHERE project_id = $${
       patchRes.args.length + 1
     };`,
-    [...patchRes.args, projectId ]
+    [...patchRes.args, projectId]
   );
-}
+};
 
-export const deleteProjectById = async (projectId: string): Promise<boolean> => {
-  const res = await db.query(`DELETE FROM project WHERE project_id = $1`, [projectId]);
+export const deleteProjectById = async (
+  projectId: string
+): Promise<boolean> => {
+  const res = await db.query(`DELETE FROM project WHERE project_id = $1`, [
+    projectId,
+  ]);
 
   return res.rowCount > 0;
 };

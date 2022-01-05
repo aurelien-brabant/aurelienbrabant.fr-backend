@@ -6,9 +6,21 @@ import {
   createProject,
   deleteProjectById,
   findProjectById,
+  findProjects
 } from "../services/projects";
 
 const router = Router();
+
+router.get("/", async (_req, res) => {
+  try {
+    const projects = await findProjects(false);
+
+    return res.status(200).json(projects);
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ msg: "Internal Server Error" });
+  }
+});
 
 router.post(
   "/",
@@ -17,7 +29,7 @@ router.post(
   body("content").isString(),
   body("coverURI").isLength({ min: 1, max: 255 }),
   body("startTs").isISO8601(),
-  body("endTs").isISO8601(),
+  body("endTs").isISO8601().optional(),
   body("technologiesIds").isArray().isLength({ min: 0 }),
   validationResultMiddleware,
   async (req, res) => {
@@ -54,7 +66,7 @@ router.get(
   validationResultMiddleware,
   async (req, res) => {
     try {
-      const projectData = await findProjectById(req.params.id);
+      const projectData = await findProjectById(req.params.id, false);
 
       if (!projectData) {
         return res.status(404).json({ msg: "No such project" });
@@ -78,6 +90,7 @@ router.patch(
   body("startTs").isISO8601().optional(),
   body("endTs").isISO8601().optional(),
   body("technologiesIds").isArray().isLength({ min: 0 }).optional(),
+  body('privacy').isIn(['PRIVATE', 'PRIVATE-PREV', 'PUBLIC']).optional(),
   validationResultMiddleware,
   async (req, res) => {
     try {
@@ -89,6 +102,7 @@ router.patch(
         startTs,
         endTs,
         technologiesIds,
+        privacy
       } = req.body;
       await editProject(
         req.params.id,
@@ -98,7 +112,8 @@ router.patch(
         coverURI,
         startTs,
         endTs,
-        technologiesIds
+        technologiesIds,
+        privacy as 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC'
       );
 
       return res.status(200).json({ msg: 'project patch OK' });

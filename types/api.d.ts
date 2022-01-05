@@ -87,16 +87,18 @@ declare namespace BrabantApi {
 	}
 
 	export interface ProjectPreview {
+		projectId: string;
 		name: string;
 		description: string;
 		coverURI: string;
 		technologies: Technology[];
-		startTs: Date,
-		endTs?: Date,
+		startTs: string,
+		endTs?: string,
 		stringId: string;
 	}
 
 	export interface Project extends ProjectPreview {
 		content: string;
+		privacy: 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC';
 	}
 }
