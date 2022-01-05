@@ -9,7 +9,7 @@ const sqlCreateUserAccountTable: SqlQuery = `CREATE TABLE IF NOT EXISTS user_acc
 		user_id				SERIAL PRIMARY KEY,
 		email				VARCHAR(70) UNIQUE NOT NULL,
 		username			VARCHAR(25) UNIQUE NOT NULL,
-		role				SMALLINT DEFAULT 0,
+		role				SMALLINT DEFAULT 10,
 		picture_uri			VARCHAR(255) NOT NULL,
 		is_email_verified	BOOLEAN DEFAULT false,
 		is_activated		BOOLEAN DEFAULT false,
@@ -83,12 +83,13 @@ const sqlCreateUserLoginEventTable: SqlQuery = `CREATE TABLE IF NOT EXISTS user_
 
 const sqlCreateProjectTable: SqlQuery = `CREATE TABLE IF NOT EXISTS project (
 		project_id		SERIAL PRIMARY KEY,
-		name			VARCHAR(100),
-		description		VARCHAR(300),
-		content			TEXT,
-		start_ts		TIMESTAMP,
+		name			VARCHAR(100) NOT NULL UNIQUE,
+		description		VARCHAR(300) NOT NULL,
+		content			TEXT NOT NULL,
+		start_ts		TIMESTAMP NOT NULL,
 		end_ts			TIMESTAMP,
-		cover_uri		VARCHAR(255)
+		cover_uri		VARCHAR(255) NOT NULL,
+		string_id		VARCHAR(100) UNIQUE
 	);`
 
 /**
@@ -106,7 +107,7 @@ const sqlCreateTechnologyTable: SqlQuery = `CREATE TABLE IF NOT EXISTS technolog
  * One project can belong to multiple technologies
  */
 
-const sqlCreateProjectTechnologyTable: SqlQuery = `CREATE TABLE IF NOT EXISTS technology (
+const sqlCreateProjectTechnologyTable: SqlQuery = `CREATE TABLE IF NOT EXISTS project_technology (
 		project_technology_id	SERIAL PRIMARY KEY,
 		technology_id			INTEGER REFERENCES technology(technology_id),
 		project_id				INTEGER REFERENCES project(project_id)
