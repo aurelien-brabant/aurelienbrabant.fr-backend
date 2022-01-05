@@ -91,6 +91,27 @@ const sqlCreateProjectTable: SqlQuery = `CREATE TABLE IF NOT EXISTS project (
 		cover_uri		VARCHAR(255)
 	);`
 
+/**
+ * exp_yo => number of experience years. Not used yet.
+ */
+
+const sqlCreateTechnologyTable: SqlQuery = `CREATE TABLE IF NOT EXISTS technology (
+		technology_id	SERIAL PRIMARY KEY,
+		name			VARCHAR(50),
+		logoURI			VARCHAR(255),
+		exp_yo			SMALLINT
+	);`
+
+/**
+ * One project can belong to multiple technologies
+ */
+
+const sqlCreateProjectTechnologyTable: SqlQuery = `CREATE TABLE IF NOT EXISTS technology (
+		project_technology_id	SERIAL PRIMARY KEY,
+		technology_id			INTEGER REFERENCES technology(technology_id),
+		project_id				INTEGER REFERENCES project(project_id)
+	);`
+
 export default [
 	sqlCreateUserAccountTable,
 	
@@ -104,5 +125,9 @@ export default [
 	sqlCreateUserEventTable,
 	sqlCreateUserLoginEventTable,
 
-	sqlCreateProjectTable
+	sqlCreateProjectTable,
+
+	sqlCreateTechnologyTable,
+
+	sqlCreateProjectTechnologyTable
 ];
