@@ -8,6 +8,7 @@ import jwtStrategy from './auth/JwtStrategy';
 
 import indexRouter from './routes/index';
 import usersRouter from './routes/users';
+import usersAdminRouter from './routes/admin_users';
 import projectsRouter from './routes/projects';
 import blogpostsRouter from './routes/blogposts';
 import blogpostsAdminRouter from './routes/admin_blogposts';
@@ -38,6 +39,8 @@ app.use('/blogposts', blogpostsRouter);
 app.use('/projects', projectsRouter);
 app.use('/auth', authRouter);
 
-app.use('/admin/blogposts', [passport.authenticate('jwt', { session: false }), isAdministrator, blogpostsAdminRouter]);
+app.use('/admin', [passport.authenticate('jwt', { session: false }), isAdministrator ]);
+app.use('/admin/blogposts', blogpostsAdminRouter);
+app.use('/admin/users', usersAdminRouter);
 
 export default app;

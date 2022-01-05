@@ -1,25 +1,11 @@
 import { Router } from "express";
 import validatorMiddleware from "../middlewares/validationResult";
-import {
-  findUsers,
-  findUserById,
-  removeUserById,
-  createUser,
-} from "../services/users";
-import { body, param } from "express-validator";
+import { createUser } from "../services/users";
+import { body } from "express-validator";
 
 import { DEFAULT_USER_PICTURE_PATH } from "../utils/constants";
 
 const router = Router();
-
-/* GET users listing. */
-router.get("/", async function (_req, res, _next) {
-  try {
-    return res.status(200).json(await findUsers());
-  } catch {
-    return res.status(500).json({ msg: "Internal Server Error" });
-  }
-});
 
 router.post(
   "/",
@@ -29,6 +15,12 @@ router.post(
   body("pictureURI").isString().isLength({ max: 255 }).optional(),
   validatorMiddleware,
   async (req, res) => {
+    if (process.env.DISABLE_USER_REGISTRATION !== undefined) {
+      return res
+        .status(501)
+        .json({ msg: "User registration has been disabled" });
+    }
+
     const {
       email,
       username,
@@ -37,57 +29,19 @@ router.post(
     } = req.body;
 
     try {
-      return res.status(201).json(
-        await createUser(
-          email,
-          username,
-          plainTextPassword,
-          pictureURI ? pictureURI : DEFAULT_USER_PICTURE_PATH
-        )
-      );
+      return res
+        .status(201)
+        .json(
+          await createUser(
+            email,
+            username,
+            plainTextPassword,
+            pictureURI ? pictureURI : DEFAULT_USER_PICTURE_PATH
+          )
+        );
     } catch (e) {
       console.error(e);
       return res.status(500).json({ msg: "Internal Server Error" });
-    }
-  }
-);
-
-router.get(
-  "/:id",
-  param("id").isNumeric(),
-  validatorMiddleware,
-  async (req, res) => {
-    const id = req.params.id;
-
-    try {
-      const userData = await findUserById(id);
-
-      if (!userData) {
-        return res.status(404).send("Not found");
-      }
-
-      return res.json(userData);
-    } catch (e) {
-      console.log(e);
-      return res.status(500).send("Internal Server Error");
-    }
-  }
-);
-
-router.delete(
-  "/:id",
-  param("id").isNumeric(),
-  validatorMiddleware,
-  async (req, res) => {
-    const id = req.params.id;
-
-    try {
-      const _deleted = await removeUserById(id);
-
-      return res.status(200).send();
-    } catch (e) {
-      console.error(e);
-      return res.status(500).send("Internal Server Error");
     }
   }
 );
