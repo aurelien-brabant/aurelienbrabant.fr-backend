@@ -47,6 +47,8 @@ const findProject = async (
     `SELECT
                               project_id,
                               name,
+                              role,
+                              company_name,
                               description,
                               content,
                               cover_uri,
@@ -73,6 +75,8 @@ const findProject = async (
   return {
     projectId: row.project_id,
     name: row.name,
+    role: row.role,
+    companyName: row.company_name,
     description: row.description,
     content: row.content,
     coverURI: row.cover_uri,
@@ -100,6 +104,8 @@ export const findProjects = async (
   const res = await db.query(`SELECT
                                project_id,
                                name,
+                               role,
+                               company_name,
                                description,
                                cover_uri,
                                start_ts,
@@ -113,6 +119,8 @@ export const findProjects = async (
     res.rows.map(async (row) => ({
       projectId: row.project_id,
       name: row.name,
+      role: row.role,
+      companyName: row.companyName,
       description: row.description,
       coverURI: row.cover_uri,
       technologies: await extractTechnologies(row.project_id),
@@ -128,20 +136,22 @@ export const findProjects = async (
 export const createProject = async (
   name: string,
   description: string,
+  role: string,
+  companyName: string | null,
   content: string,
   coverURI: string,
   startTs: Date,
   endTs: Date,
   technologiesIds: string[],
-  gitlabLink: string,
-  githubLink: string,
+  gitlabLink: string | null,
+  githubLink: string | null
 ): Promise<BrabantApi.ProjectPreview> => {
   const res = await db.query(
-    `INSERT INTO project(name, description, content, cover_uri, start_ts, end_ts, string_id, gitlab_link, github_link)
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `INSERT INTO project(name, description, role, company_name, content, cover_uri, start_ts, end_ts, string_id, gitlab_link, github_link)
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     RETURNING project_id, name, description, cover_uri, string_id
   ;`,
-    [name, description, content, coverURI, startTs, endTs, slugify(name), gitlabLink, githubLink]
+    [name, description, role, companyName, content, coverURI, startTs, endTs, slugify(name), gitlabLink, githubLink]
   );
 
   const row = res.rows[0];
@@ -152,6 +162,8 @@ export const createProject = async (
     projectId: row.project_id,
     name: row.name,
     description: row.description,
+    role: row.role,
+    companyName: row.companyName,
     coverURI: row.cover_uri,
     technologies: await extractTechnologies(row.project_id),
     startTs: row.start_ts,
@@ -164,14 +176,16 @@ export const editProject = async (
   projectId: string,
   name?: string,
   description?: string,
+  role?: string,
+  companyName?: string | null,
   content?: string,
   coverURI?: string,
   startTs?: Date,
   endTs?: Date,
   technologiesIds?: string[],
   privacy?: 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC',
-  gitlabLink?: string,
-  githubLink?: string
+  gitlabLink?: string | null,
+  githubLink?: string | null
 ) => {
   if (technologiesIds) {
     insertTechnologies(projectId, technologiesIds);
@@ -180,6 +194,8 @@ export const editProject = async (
   const patchRes = buildPatchQuery({
     name,
     description,
+    role,
+    company_name: companyName,
     content,
     cover_uri: coverURI,
     start_ts: startTs,

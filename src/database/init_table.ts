@@ -84,16 +84,18 @@ const sqlCreateUserLoginEventTable: SqlQuery = `CREATE TABLE IF NOT EXISTS user_
 const sqlCreateProjectTable: SqlQuery = `CREATE TABLE IF NOT EXISTS project (
 		project_id		SERIAL PRIMARY KEY,
 		name			VARCHAR(100) NOT NULL UNIQUE,
+		role			VARCHAR(100) NOT NULL,
 		description		VARCHAR(300) NOT NULL,
 		content			TEXT NOT NULL,
 		start_ts		TIMESTAMP NOT NULL,
-		end_ts			TIMESTAMP,
 		cover_uri		VARCHAR(255) NOT NULL,
 		string_id		VARCHAR(100) UNIQUE,
 		privacy			VARCHAR(20) DEFAULT 'PRIVATE',
-		github_link		VARCHAR(255) DEFAULT '',
-		gitlab_link		VARCHAR(255) DEFAULT '',
-		archive_link	VARCHAR(255) DEFAULT ''
+		end_ts			TIMESTAMP,
+		company_name	VARCHAR(100),
+		github_link		VARCHAR(255),
+		gitlab_link		VARCHAR(255),
+		archive_link	VARCHAR(255)
 	);`
 
 /**

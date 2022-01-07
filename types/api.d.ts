@@ -93,14 +93,16 @@ declare namespace BrabantApi {
 		coverURI: string;
 		technologies: Technology[];
 		startTs: string,
-		endTs?: string,
 		stringId: string;
+		companyName: string | null;
+		role: string;
+		endTs?: string,
 	}
 
 	export interface Project extends ProjectPreview {
 		content: string;
 		privacy: 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC';
-		githubLink: string;
-		gitlabLink: string;
+		githubLink: string | null;
+		gitlabLink: string | null;
 	}
 }
