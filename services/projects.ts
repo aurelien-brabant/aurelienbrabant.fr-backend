@@ -53,7 +53,9 @@ const findProject = async (
                               start_ts,
                               end_ts,
                               string_id,
-                              privacy
+                              privacy,
+                              gitlab_link,
+                              github_link
                               FROM project
                               WHERE ${findBy} = $1 ${
       onlyPublic ? "AND privacy = 'PUBLIC'" : ""
@@ -78,7 +80,9 @@ const findProject = async (
     endTs: row.end_ts,
     technologies: await extractTechnologies(row.project_id),
     stringId: row.string_id,
-    privacy: row.privacy as 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC'
+    privacy: row.privacy as 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC',
+    gitlabLink: row.gitlab_link,
+    githubLink: row.github_link
   };
 };
 
@@ -128,14 +132,16 @@ export const createProject = async (
   coverURI: string,
   startTs: Date,
   endTs: Date,
-  technologiesIds: string[]
+  technologiesIds: string[],
+  gitlabLink: string,
+  githubLink: string,
 ): Promise<BrabantApi.ProjectPreview> => {
   const res = await db.query(
-    `INSERT INTO project(name, description, content, cover_uri, start_ts, end_ts, string_id)
-    VALUES($1, $2, $3, $4, $5, $6, $7)
+    `INSERT INTO project(name, description, content, cover_uri, start_ts, end_ts, string_id, gitlab_link, github_link)
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
     RETURNING project_id, name, description, cover_uri, string_id
   ;`,
-    [name, description, content, coverURI, startTs, endTs, slugify(name)]
+    [name, description, content, coverURI, startTs, endTs, slugify(name), gitlabLink, githubLink]
   );
 
   const row = res.rows[0];
@@ -163,7 +169,9 @@ export const editProject = async (
   startTs?: Date,
   endTs?: Date,
   technologiesIds?: string[],
-  privacy?: 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC'
+  privacy?: 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC',
+  gitlabLink?: string,
+  githubLink?: string
 ) => {
   if (technologiesIds) {
     insertTechnologies(projectId, technologiesIds);
@@ -177,7 +185,9 @@ export const editProject = async (
     start_ts: startTs,
     end_ts: endTs,
     string_id: name ? slugify(name) : undefined,
-    privacy
+    privacy,
+    github_link: githubLink,
+    gitlab_link: gitlabLink
   });
 
   if (patchRes.args.length === 0) {

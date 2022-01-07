@@ -100,5 +100,7 @@ declare namespace BrabantApi {
 	export interface Project extends ProjectPreview {
 		content: string;
 		privacy: 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC';
+		githubLink: string;
+		gitlabLink: string;
 	}
 }

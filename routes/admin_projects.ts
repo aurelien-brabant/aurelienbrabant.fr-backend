@@ -31,6 +31,8 @@ router.post(
   body("startTs").isISO8601(),
   body("endTs").isISO8601().optional(),
   body("technologiesIds").isArray().isLength({ min: 0 }),
+  body("githubLink").isLength({ max: 255 }),
+  body("gitlabLink").isLength({ max: 255 }),
   validationResultMiddleware,
   async (req, res) => {
     try {
@@ -42,6 +44,8 @@ router.post(
         startTs,
         endTs,
         technologiesIds,
+        gitlabLink,
+        githubLink
       } = req.body;
       const projectData = await createProject(
         name,
@@ -50,7 +54,9 @@ router.post(
         coverURI,
         startTs,
         endTs,
-        technologiesIds
+        technologiesIds,
+        gitlabLink,
+        githubLink
       );
 
       return res.status(201).json(projectData);
@@ -91,6 +97,8 @@ router.patch(
   body("endTs").isISO8601().optional(),
   body("technologiesIds").isArray().isLength({ min: 0 }).optional(),
   body('privacy').isIn(['PRIVATE', 'PRIVATE-PREV', 'PUBLIC']).optional(),
+  body("githubLink").isLength({ max: 255 }).optional(),
+  body("gitlabLink").isLength({ max: 255 }).optional(),
   validationResultMiddleware,
   async (req, res) => {
     try {
@@ -102,7 +110,9 @@ router.patch(
         startTs,
         endTs,
         technologiesIds,
-        privacy
+        privacy,
+        gitlabLink,
+        githubLink
       } = req.body;
       await editProject(
         req.params.id,
@@ -113,7 +123,9 @@ router.patch(
         startTs,
         endTs,
         technologiesIds,
-        privacy as 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC'
+        privacy as 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC',
+        gitlabLink,
+        githubLink
       );
 
       return res.status(200).json({ msg: 'project patch OK' });
