@@ -113,6 +113,7 @@ export const findProjects = async (
                                string_id
                              FROM project
                              ${onlyPublic ? "WHERE privacy = 'PUBLIC'" : ""}
+                             ORDER BY start_ts DESC
                              ;`);
 
   return await Promise.all(
