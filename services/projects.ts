@@ -94,8 +94,8 @@ export const findProjectById = (projectId: string, publicOnly = true) => {
   return findProject("project_id", projectId, publicOnly);
 };
 
-export const findProjectByName = (projectName: string, publicOnly = true) => {
-  return findProject("name", projectName, publicOnly);
+export const findProjectByStringId = (projectStringId: string, publicOnly = true) => {
+  return findProject("string_id", projectStringId, publicOnly);
 };
 
 export const findProjects = async (

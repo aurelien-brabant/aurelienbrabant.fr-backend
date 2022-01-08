@@ -9,7 +9,7 @@ const sqlCreateUserAccountTable: SqlQuery = `CREATE TABLE IF NOT EXISTS user_acc
 		user_id				SERIAL PRIMARY KEY,
 		email				VARCHAR(70) UNIQUE NOT NULL,
 		username			VARCHAR(25) UNIQUE NOT NULL,
-		role				SMALLINT DEFAULT 10,
+		role				SMALLINT DEFAULT 0,
 		picture_uri			VARCHAR(255) NOT NULL,
 		is_email_verified	BOOLEAN DEFAULT false,
 		is_activated		BOOLEAN DEFAULT false,
