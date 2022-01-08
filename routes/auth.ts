@@ -46,7 +46,10 @@ router.post(
 
     const accessToken = jwt.sign(
       { sub: row.user_id, role: parseInt(row.role) },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '15m'
+      }
     );
 
     return res.status(201).json({ accessToken });
