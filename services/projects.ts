@@ -84,9 +84,9 @@ const findProject = async (
     endTs: row.end_ts,
     technologies: await extractTechnologies(row.project_id),
     stringId: row.string_id,
-    privacy: row.privacy as 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC',
+    privacy: row.privacy as "PRIVATE" | "PRIVATE-PREV" | "PUBLIC",
     gitlabLink: row.gitlab_link,
-    githubLink: row.github_link
+    githubLink: row.github_link,
   };
 };
 
@@ -94,7 +94,10 @@ export const findProjectById = (projectId: string, publicOnly = true) => {
   return findProject("project_id", projectId, publicOnly);
 };
 
-export const findProjectByStringId = (projectStringId: string, publicOnly = true) => {
+export const findProjectByStringId = (
+  projectStringId: string,
+  publicOnly = true
+) => {
   return findProject("string_id", projectStringId, publicOnly);
 };
 
@@ -152,7 +155,19 @@ export const createProject = async (
     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     RETURNING project_id, name, description, cover_uri, string_id
   ;`,
-    [name, description, role, companyName, content, coverURI, startTs, endTs, slugify(name), gitlabLink, githubLink]
+    [
+      name,
+      description,
+      role,
+      companyName,
+      content,
+      coverURI,
+      startTs,
+      endTs,
+      slugify(name.toLowerCase()),
+      gitlabLink,
+      githubLink,
+    ]
   );
 
   const row = res.rows[0];
@@ -184,7 +199,7 @@ export const editProject = async (
   startTs?: Date,
   endTs?: Date,
   technologiesIds?: string[],
-  privacy?: 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC',
+  privacy?: "PRIVATE" | "PRIVATE-PREV" | "PUBLIC",
   gitlabLink?: string | null,
   githubLink?: string | null
 ) => {
@@ -201,10 +216,10 @@ export const editProject = async (
     cover_uri: coverURI,
     start_ts: startTs,
     end_ts: endTs,
-    string_id: name ? slugify(name) : undefined,
+    string_id: name ? slugify(name.toLowerCase()) : undefined,
     privacy,
     github_link: githubLink,
-    gitlab_link: gitlabLink
+    gitlab_link: gitlabLink,
   });
 
   if (patchRes.args.length === 0) {

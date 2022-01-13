@@ -338,7 +338,8 @@ export const editBlogpost = async (
     description,
     content,
     cover_image_path: coverImagePath,
-    privacy
+    privacy,
+    string_id: title ? slugify(title.toLowerCase()) : undefined
   });
 
   console.log(patchRes);
@@ -370,7 +371,7 @@ export const createBlogpost = async (
         RETURNING blogpost_id
 	`,
     [
-      slugify(title),
+      slugify(title.toLowerCase()),
       authorId,
       title,
       description,
