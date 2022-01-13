@@ -14,6 +14,7 @@ import projectsAdminRouter from "./routes/admin_projects";
 import blogpostsRouter from "./routes/blogposts";
 import blogpostsAdminRouter from "./routes/admin_blogposts";
 import authRouter from "./routes/auth";
+import contactRouter from './routes/contact';
 
 import technologiesRouter from "./routes/technologies";
 import technologiesAdminRouter from "./routes/admin_technologies";
@@ -42,6 +43,7 @@ app.use("/blogposts", blogpostsRouter);
 app.use("/projects", projectsRouter);
 app.use("/auth", authRouter);
 app.use("/technologies", technologiesRouter);
+app.use("/contact", contactRouter);
 
 app.use("/admin", [
 	passport.authenticate("jwt", { session: false }),
