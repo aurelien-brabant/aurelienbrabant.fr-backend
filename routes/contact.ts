@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { body } from "express-validator";
+import recaptcha2 from "../middlewares/recaptcha2";
 import validationResultMiddleware from "../middlewares/validationResult";
 import { sendContactData } from "../services/contact";
 
@@ -11,6 +12,7 @@ router.post(
   body("email").isEmail(),
   body("name").isString(),
   body("message").isString(),
+  recaptcha2,
   validationResultMiddleware,
 
   async (req, res) => {

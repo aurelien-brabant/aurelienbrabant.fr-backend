@@ -339,7 +339,8 @@ export const editBlogpost = async (
     content,
     cover_image_path: coverImagePath,
     privacy,
-    string_id: title ? slugify(title.toLowerCase()) : undefined
+    string_id: title ? slugify(title.toLowerCase()) : undefined,
+    last_edit_ts: new Date(Date.now()).toISOString()
   });
 
   console.log(patchRes);
