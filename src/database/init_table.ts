@@ -93,8 +93,10 @@ const sqlCreateProjectTable: SqlQuery = `CREATE TABLE IF NOT EXISTS project (
 		privacy			VARCHAR(20) DEFAULT 'PRIVATE',
 		end_ts			TIMESTAMP,
 		company_name	VARCHAR(100),
+		project_link	VARCHAR(255),
 		github_link		VARCHAR(255),
 		gitlab_link		VARCHAR(255),
+		gitea_link		VARCHAR(255),
 		archive_link	VARCHAR(255)
 	);`
 

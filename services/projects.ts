@@ -57,7 +57,9 @@ const findProject = async (
                               string_id,
                               privacy,
                               gitlab_link,
-                              github_link
+                              github_link,
+                              gitea_link,
+                              project_link
                               FROM project
                               WHERE ${findBy} = $1 ${
       onlyPublic ? "AND privacy = 'PUBLIC'" : ""
@@ -87,6 +89,8 @@ const findProject = async (
     privacy: row.privacy as "PRIVATE" | "PRIVATE-PREV" | "PUBLIC",
     gitlabLink: row.gitlab_link,
     githubLink: row.github_link,
+    giteaLink: row.gitea_link,
+    projectLink: row.project_link
   };
 };
 
@@ -113,7 +117,11 @@ export const findProjects = async (
                                cover_uri,
                                start_ts,
                                end_ts,
-                               string_id
+                               string_id,
+                               github_link,
+                               gitlab_link,
+                               gitea_link,
+                               project_link
                              FROM project
                              ${onlyPublic ? "WHERE privacy = 'PUBLIC'" : ""}
                              ORDER BY start_ts DESC
@@ -131,6 +139,10 @@ export const findProjects = async (
       startTs: row.start_ts,
       endTs: row.end_ts,
       stringId: row.string_id,
+      gitlabLink: row.gitlab_link,
+      githubLink: row.github_link,
+      giteaLink: row.gitea_link,
+      projectLink: row.project_link
     }))
   );
 };
@@ -148,12 +160,14 @@ export const createProject = async (
   endTs: Date,
   technologiesIds: string[],
   gitlabLink: string | null,
-  githubLink: string | null
+  githubLink: string | null,
+  giteaLink: string | null,
+  projectLink: string | null,
 ): Promise<BrabantApi.ProjectPreview> => {
   const res = await db.query(
-    `INSERT INTO project(name, description, role, company_name, content, cover_uri, start_ts, end_ts, string_id, gitlab_link, github_link)
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-    RETURNING project_id, name, description, cover_uri, string_id
+    `INSERT INTO project(name, description, role, company_name, content, cover_uri, start_ts, end_ts, string_id, gitlab_link, github_link, gitea_link, project_link)
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+    RETURNING project_id, name, description, cover_uri, string_id, gitlab_link, github_link, gitea_link, project_link
   ;`,
     [
       name,
@@ -167,6 +181,8 @@ export const createProject = async (
       slugify(name.toLowerCase()),
       gitlabLink,
       githubLink,
+      giteaLink,
+      projectLink
     ]
   );
 
@@ -185,6 +201,10 @@ export const createProject = async (
     startTs: row.start_ts,
     endTs: row.end_ts,
     stringId: row.string_id,
+    gitlabLink: row.gitlab_link,
+    githubLink: row.github_link,
+    giteaLink: row.gitea_link,
+    projectLink: row.project_link
   };
 };
 
@@ -201,7 +221,9 @@ export const editProject = async (
   technologiesIds?: string[],
   privacy?: "PRIVATE" | "PRIVATE-PREV" | "PUBLIC",
   gitlabLink?: string | null,
-  githubLink?: string | null
+  githubLink?: string | null,
+  giteaLink?: string | null,
+  projectLink?: string | null
 ) => {
   if (technologiesIds) {
     insertTechnologies(projectId, technologiesIds);
@@ -220,6 +242,8 @@ export const editProject = async (
     privacy,
     github_link: githubLink,
     gitlab_link: gitlabLink,
+    gitea_link: giteaLink,
+    project_link: projectLink
   });
 
   if (patchRes.args.length === 0) {

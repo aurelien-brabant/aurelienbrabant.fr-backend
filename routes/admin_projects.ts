@@ -34,6 +34,8 @@ router.post(
   body("technologiesIds").isArray().isLength({ min: 0 }),
   body("githubLink").isLength({ min: 1, max: 255 }).optional({ nullable: true }),
   body("gitlabLink").isLength({ min: 1, max: 255 }).optional({ nullable: true}),
+  body("giteaLink").isLength({ min: 1, max: 255 }).optional({ nullable: true}),
+  body("projectLink").isLength({ min: 1, max: 255 }).optional({ nullable: true}),
   body("companyName").isLength({ min: 1, max: 255 }).optional({ nullable: true}),
   validationResultMiddleware,
   async (req, res) => {
@@ -49,7 +51,9 @@ router.post(
         endTs,
         technologiesIds,
         gitlabLink,
-        githubLink
+        githubLink,
+        giteaLink,
+        projectLink
       } = req.body;
       const projectData = await createProject(
         name,
@@ -62,7 +66,9 @@ router.post(
         endTs,
         technologiesIds,
         gitlabLink,
-        githubLink
+        githubLink,
+        giteaLink,
+        projectLink
       );
 
       return res.status(201).json(projectData);
@@ -106,6 +112,8 @@ router.patch(
   body('privacy').isIn(['PRIVATE', 'PRIVATE-PREV', 'PUBLIC']).optional(),
   body("githubLink").isLength({ min: 1, max: 255 }).optional({ nullable: true }),
   body("gitlabLink").isLength({ min: 1, max: 255 }).optional({ nullable: true}),
+  body("giteaLink").isLength({ min: 1, max: 255 }).optional({ nullable: true}),
+  body("projectLink").isLength({ min: 1, max: 255 }).optional({ nullable: true}),
   body("companyName").isLength({ min: 1, max: 255 }).optional({ nullable: true}),
   validationResultMiddleware,
   async (req, res) => {
@@ -122,7 +130,9 @@ router.patch(
         technologiesIds,
         privacy,
         gitlabLink,
-        githubLink
+        githubLink,
+        giteaLink,
+        projectLink
       } = req.body;
       await editProject(
         req.params.id,
@@ -137,7 +147,9 @@ router.patch(
         technologiesIds,
         privacy as 'PRIVATE' | 'PRIVATE-PREV' | 'PUBLIC',
         gitlabLink,
-        githubLink
+        githubLink,
+        giteaLink,
+        projectLink
       );
 
       return res.status(200).json({ msg: 'project patch OK' });
